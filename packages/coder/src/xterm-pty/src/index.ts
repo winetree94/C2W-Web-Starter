@@ -1,1 +1,0 @@
-export { openpty } from "./pty";

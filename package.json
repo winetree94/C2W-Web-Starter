@@ -5,7 +5,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "yarn workspace @coder/app dev",
+    "app:dev": "yarn workspace @coder/app dev",
+    "app:build": "yarn workspace @coder/app build",
     "binary:install": "yarn workspace @coder/container binary:install",
     "wasm:build": "yarn workspace @coder/container wasm:build && yarn workspace @coder/container wasm:copy"
   }

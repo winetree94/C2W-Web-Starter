@@ -1,4 +1,8 @@
-export function delegate(worker, workerImageName, address) {
+export function delegate(
+    worker: Worker,
+    workerImageName: string,
+    address: string
+) {
     var shared = new SharedArrayBuffer(8 + 4096);
     var streamCtrl = new Int32Array(shared, 0, 1);
     var streamStatus = new Int32Array(shared, 4, 1);
@@ -10,9 +14,9 @@ export function delegate(worker, workerImageName, address) {
     var ongoing = false;
     var opened = false;
     var accepted = false;
-    var wsconn;
+    var wsconn: WebSocket;
     var connbuf = new Uint8Array(0);
-    return function(msg) {
+    return function(msg: MessageEvent) {
         const req_ = msg.data;
         if (typeof req_ == "object" && req_.type) {
             switch (req_.type) {
@@ -27,7 +31,7 @@ export function delegate(worker, workerImageName, address) {
                         wsconn = new WebSocket(address, opts);
                         wsconn.binaryType = 'arraybuffer';
                         wsconn.onmessage = function(event) {
-                            buf2 = new Uint8Array(connbuf.length + event.data.byteLength);
+                            const buf2 = new Uint8Array(connbuf.length + event.data.byteLength);
                             var o = connbuf.length;
                             buf2.set(connbuf, 0);
                             buf2.set(new Uint8Array(event.data), o);
@@ -44,7 +48,7 @@ export function delegate(worker, workerImageName, address) {
                             accepted = false;
                             ongoing = false;
                         };
-                        wsconn.onerror = function(error) {
+                        wsconn.onerror = function(error: any) {
                             console.log("websocket error: "+error.data);
                             opened = false;
                             accepted = false;

@@ -1,11 +1,17 @@
-importScripts(location.origin + "/browser_wasi_shim/index.js");
-importScripts(location.origin + "/browser_wasi_shim/wasi_defs.js");
-importScripts(location.origin + "/worker-util.js");
-importScripts(location.origin + "/wasi-util.js");
+// importScripts(location.origin + "/browser_wasi_shim/index.js");
+// importScripts(location.origin + "/browser_wasi_shim/wasi_defs.js");
+// importScripts(location.origin + "/worker-util.js");
+// importScripts(location.origin + "/wasi-util.js");
+
+import { Fd, WASI } from "@bjorn3/browser_wasi_shim";
+import { appendData, errStatus, getImagename, sendCert, serveIfInitMsg, sockWaitForReadable, streamCtrl, streamData, streamLen, streamStatus, wasiHackSocket } from "./worker-util";
+import { Ciovec } from "@bjorn3/browser_wasi_shim/wasi_defs";
+import { Event, EventType, Subscription } from "./wasi-util";
 
 onmessage = (msg) => {
+    console.log('init')
     serveIfInitMsg(msg);
-    var fds = [
+    var fds: Fd[] = [
         undefined, // 0: stdin
         undefined, // 1: stdout
         undefined, // 2: stderr
@@ -16,8 +22,8 @@ onmessage = (msg) => {
     ];
     var certfd = 3;
     var listenfd = 4;
-    var args = ['arg0', '--certfd='+certfd, '--net-listenfd='+listenfd, '--debug'];
-    var env = [];
+    var args = ['arg0', '--certfd=' + certfd, '--net-listenfd=' + listenfd, '--debug'];
+    var env: string[] = [];
     var wasi = new WASI(args, env, fds);
     wasiHack(wasi, certfd, 5);
     wasiHackSocket(wasi, listenfd, 5);
@@ -35,9 +41,13 @@ onmessage = (msg) => {
 
 // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
 const ERRNO_INVAL = 28;
-const ERRNO_AGAIN= 6;
+const ERRNO_AGAIN = 6;
 
-function wasiHack(wasi, certfd, connfd) {
+function wasiHack(
+    wasi: WASI,
+    certfd: number,
+    connfd: number
+) {
     var certbuf = new Uint8Array(0);
     var _fd_close = wasi.wasiImport.fd_close;
     wasi.wasiImport.fd_close = (fd) => {
@@ -65,7 +75,7 @@ function wasiHack(wasi, certfd, connfd) {
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
             var iovecs = Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
             var wtotal = 0
-            for (i = 0; i < iovecs.length; i++) {
+            for (let i = 0; i < iovecs.length; i++) {
                 var iovec = iovecs[i];
                 var buf = buffer8.slice(iovec.buf, iovec.buf + iovec.buf_len);
                 if (buf.length == 0) {
@@ -126,7 +136,7 @@ function wasiHack(wasi, certfd, connfd) {
                     return ERRNO_INVAL;
                 } else if (sockreadable == true) {
                     let event = new Event();
-                    event.userdata = pollSubConn.userdata;
+                    event.userdata = pollSubConn?.userdata;
                     event.error = 0;
                     event.type = new EventType("fd_read");
                     events.push(event);
@@ -134,7 +144,7 @@ function wasiHack(wasi, certfd, connfd) {
             }
             if (isClockPoll) {
                 let event = new Event();
-                event.userdata = clockSub.userdata;
+                event.userdata = clockSub?.userdata;
                 event.error = 0;
                 event.type = new EventType("clock");
                 events.push(event);
@@ -147,9 +157,9 @@ function wasiHack(wasi, certfd, connfd) {
     }
 }
 
-function envHack(wasi){
+function envHack(wasi) {
     return {
-        http_send: function(addressP, addresslen, reqP, reqlen, idP){
+        http_send: function (addressP, addresslen, reqP, reqlen, idP) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var address = new Uint8Array(wasi.inst.exports.memory.buffer, addressP, addresslen);
             var req = new Uint8Array(wasi.inst.exports.memory.buffer, reqP, reqlen);
@@ -167,7 +177,7 @@ function envHack(wasi){
             buffer.setUint32(idP, id, true);
             return 0;
         },
-        http_writebody: function(id, bodyP, bodylen, nwrittenP, isEOF){
+        http_writebody: function (id, bodyP, bodylen, nwrittenP, isEOF) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var body = new Uint8Array(wasi.inst.exports.memory.buffer, bodyP, bodylen);
             streamCtrl[0] = 0;
@@ -184,10 +194,10 @@ function envHack(wasi){
             buffer.setUint32(nwrittenP, bodylen, true);
             return 0;
         },
-        http_isreadable: function(id, isOKP){
+        http_isreadable: function (id, isOKP) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             streamCtrl[0] = 0;
-            postMessage({type: "http_isreadable", id: id});
+            postMessage({ type: "http_isreadable", id: id });
             Atomics.wait(streamCtrl, 0, 0);
             if (streamStatus[0] < 0) {
                 return ERRNO_INVAL;
@@ -199,12 +209,12 @@ function envHack(wasi){
             buffer.setUint32(isOKP, readable, true);
             return 0;
         },
-        http_recv: function(id, respP, bufsize, respsizeP, isEOFP){
+        http_recv: function (id, respP, bufsize, respsizeP, isEOFP) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
 
             streamCtrl[0] = 0;
-            postMessage({type: "http_recv", id: id, len: bufsize});
+            postMessage({ type: "http_recv", id: id, len: bufsize });
             Atomics.wait(streamCtrl, 0, 0);
             if (streamStatus[0] < 0) {
                 return ERRNO_INVAL;
@@ -220,12 +230,12 @@ function envHack(wasi){
             }
             return 0;
         },
-        http_readbody: function(id, bodyP, bufsize, bodysizeP, isEOFP){
+        http_readbody: function (id, bodyP, bufsize, bodysizeP, isEOFP) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
 
             streamCtrl[0] = 0;
-            postMessage({type: "http_readbody", id: id, len: bufsize});
+            postMessage({ type: "http_readbody", id: id, len: bufsize });
             Atomics.wait(streamCtrl, 0, 0);
             if (streamStatus[0] < 0) {
                 return ERRNO_INVAL;

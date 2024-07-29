@@ -1,9 +1,8 @@
-
-console.log("Hello from ws-delegate.js");
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default {
   plugins: [
-    // other plugins...
+    tsconfigPaths(),
     (() => ({
       name: 'configure-server',
       configureServer(server) {

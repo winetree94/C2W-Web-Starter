@@ -3,7 +3,7 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -19,7 +19,13 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "xterm-pty": ["../xterm-pty/src"],
+      "xterm-pty/*": ["../xterm-pty/src/*"],
+      "@bjorn3/browser_wasi_shim": ["../browser_wasi_shim/src"],
+      "@bjorn3/browser_wasi_shim/*": ["../browser_wasi_shim/src/*"],
+    }
   },
   "include": ["src"]
 }

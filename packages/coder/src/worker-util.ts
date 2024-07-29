@@ -1,16 +1,23 @@
-var streamCtrl;
-var streamStatus;
-var streamLen;
-var streamData;
-function registerSocketBuffer(shared){
+export var streamCtrl: Int32Array;
+import { File, PreopenDirectory } from '@bjorn3/browser_wasi_shim/fs_mem';
+import { Ciovec, Iovec, WHENCE_SET } from '@bjorn3/browser_wasi_shim/wasi_defs';
+export var streamStatus: Int32Array;
+export var streamLen: Int32Array;
+export var streamData: Uint8Array;
+
+export function registerSocketBuffer(
+    shared: SharedArrayBuffer
+) {
     streamCtrl = new Int32Array(shared, 0, 1);
     streamStatus = new Int32Array(shared, 4, 1);
     streamLen = new Int32Array(shared, 8, 1);
     streamData = new Uint8Array(shared, 12);
 }
 
-var imagename;
-function serveIfInitMsg(msg) {
+var imagename: string;
+export function serveIfInitMsg(
+    msg: MessageEvent
+) {
     const req_ = msg.data;
     if (typeof req_ == "object"){
         if (req_.type == "init") {
@@ -26,21 +33,23 @@ function serveIfInitMsg(msg) {
     return false;
 }
 
-function getImagename() {
+export function getImagename() {
     return imagename;
 }
 
-const errStatus = {
+export const errStatus = {
     val: 0,
 };
 
-function sockAccept(){
+export function sockAccept(){
     streamCtrl[0] = 0;
     postMessage({type: "accept"});
     Atomics.wait(streamCtrl, 0, 0);
     return streamData[0] == 1;
 }
-function sockSend(data){
+export function sockSend(
+    data: ArrayBuffer
+) {
     streamCtrl[0] = 0;
     postMessage({type: "send", buf: data});
     Atomics.wait(streamCtrl, 0, 0);
@@ -49,7 +58,9 @@ function sockSend(data){
         return errStatus;
     }
 }
-function sockRecv(len){
+export function sockRecv(
+    len: number
+) {
     streamCtrl[0] = 0;
     postMessage({type: "recv", len: len});
     Atomics.wait(streamCtrl, 0, 0);
@@ -62,7 +73,9 @@ function sockRecv(len){
     return res;
 }
 
-function sockWaitForReadable(timeout){
+export function sockWaitForReadable(
+    timeout: number = 0
+) {
     streamCtrl[0] = 0;
     postMessage({type: "recv-is-readable", timeout: timeout});
     Atomics.wait(streamCtrl, 0, 0);
@@ -73,7 +86,9 @@ function sockWaitForReadable(timeout){
     return streamData[0] == 1;
 }
 
-function sendCert(data){
+export function sendCert(
+    data: ArrayBuffer
+) {
     streamCtrl[0] = 0;
     postMessage({type: "send_cert", buf: data});
     Atomics.wait(streamCtrl, 0, 0);
@@ -83,7 +98,7 @@ function sendCert(data){
     }
 }
 
-function recvCert(){
+export function recvCert(){
     var buf = new Uint8Array(0);
     return new Promise((resolve, reject) => {
         function getCert(){
@@ -107,14 +122,19 @@ function recvCert(){
     });
 }
 
-function appendData(data1, data2) {
-    buf2 = new Uint8Array(data1.byteLength + data2.byteLength);
+export function appendData(
+    data1: ArrayBuffer,
+    data2: ArrayBuffer
+) {
+    const buf2 = new Uint8Array(data1.byteLength + data2.byteLength);
     buf2.set(new Uint8Array(data1), 0);
     buf2.set(new Uint8Array(data2), data1.byteLength);
     return buf2;
 }
 
-function getCertDir(cert) {
+export function getCertDir(
+    cert: ArrayBuffer
+) {
     var certDir = new PreopenDirectory("/.wasmenv", {
         "proxy.crt": new File(cert)
     });
@@ -143,7 +163,11 @@ function getCertDir(cert) {
     return certDir;
 }
 
-function wasiHackSocket(wasi, listenfd, connfd) {
+export function wasiHackSocket(
+    wasi: any,
+    listenfd: number,
+    connfd: number
+) {
     // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
     const ERRNO_INVAL = 28;
     const ERRNO_AGAIN= 6;
@@ -217,7 +241,7 @@ function wasiHackSocket(wasi, listenfd, connfd) {
         var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
         var iovecs = Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
         var wtotal = 0
-        for (i = 0; i < iovecs.length; i++) {
+        for (let i = 0; i < iovecs.length; i++) {
             var iovec = iovecs[i];
             var buf = buffer8.slice(iovec.buf, iovec.buf + iovec.buf_len);
             if (buf.length == 0) {
@@ -250,7 +274,7 @@ function wasiHackSocket(wasi, listenfd, connfd) {
         var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
         var iovecs = Iovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
         var nread = 0;
-        for (i = 0; i < iovecs.length; i++) {
+        for (let i = 0; i < iovecs.length; i++) {
             var iovec = iovecs[i];
             if (iovec.buf_len == 0) {
                 continue;
