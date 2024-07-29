@@ -1,7 +1,6 @@
-import { Fd, WASI } from "@bjorn3/browser_wasi_shim";
+import { Fd, WASI, wasi as wasiorigin } from "@bjorn3/browser_wasi_shim";
 import { errStatus, getCertDir, getImagename, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
 import { TtyClient } from 'xterm-pty';
-import { Ciovec, Iovec } from "@bjorn3/browser_wasi_shim/wasi_defs";
 import { Event, EventType, Subscription } from "./wasi-util";
 
 onmessage = (msg) => {
@@ -90,7 +89,7 @@ function wasiHack(
         if (fd == 0) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
-            var iovecs = Iovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
+            var iovecs = wasiorigin.Iovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
             var nread = 0;
             for (let i = 0; i < iovecs.length; i++) {
                 var iovec = iovecs[i];
@@ -114,7 +113,7 @@ function wasiHack(
         if ((fd == 1) || (fd == 2)) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
-            var iovecs = Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
+            var iovecs = wasiorigin.Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
             var wtotal = 0
             for (let i = 0; i < iovecs.length; i++) {
                 var iovec = iovecs[i];

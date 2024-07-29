@@ -1,7 +1,5 @@
 export var streamCtrl: Int32Array;
-import { WASI } from '@bjorn3/browser_wasi_shim';
-import { File, PreopenDirectory } from '@bjorn3/browser_wasi_shim/fs_mem';
-import { Ciovec, Iovec, WHENCE_SET } from '@bjorn3/browser_wasi_shim/wasi_defs';
+import { WASI, File, PreopenDirectory, wasi as wasiOrigin } from '@bjorn3/browser_wasi_shim';
 
 export var streamStatus: Int32Array;
 export var streamLen: Int32Array;
@@ -159,13 +157,13 @@ export function getCertDir(
             ) => {
                 //@ts-ignore
                 var old_offset = o.file_pos;
-                var r = o.fd_seek(offset, WHENCE_SET);
+                var r = o.fd_seek(offset, wasiOrigin.WHENCE_SET);
                 if (r.ret != 0) {
                     return { ret: -1, nread: 0 };
                 }
                 //@ts-ignore
                 var read_ret = o.fd_read(view8);
-                r = o.fd_seek(old_offset, WHENCE_SET);
+                r = o.fd_seek(old_offset, wasiOrigin.WHENCE_SET);
                 if (r.ret != 0) {
                     return { ret: -1, nread: 0 };
                 }
@@ -255,7 +253,7 @@ export function wasiHackSocket(
         }
         var buffer = new DataView(wasi.inst.exports.memory.buffer);
         var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
-        var iovecs = Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
+        var iovecs = wasiOrigin.Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
         var wtotal = 0
         for (let i = 0; i < iovecs.length; i++) {
             var iovec = iovecs[i];
@@ -288,7 +286,7 @@ export function wasiHackSocket(
         }
         var buffer = new DataView(wasi.inst.exports.memory.buffer);
         var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
-        var iovecs = Iovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
+        var iovecs = wasiOrigin.Iovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
         var nread = 0;
         for (let i = 0; i < iovecs.length; i++) {
             var iovec = iovecs[i];

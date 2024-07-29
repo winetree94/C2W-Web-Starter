@@ -1,11 +1,5 @@
-// importScripts(location.origin + "/browser_wasi_shim/index.js");
-// importScripts(location.origin + "/browser_wasi_shim/wasi_defs.js");
-// importScripts(location.origin + "/worker-util.js");
-// importScripts(location.origin + "/wasi-util.js");
-
-import { Fd, WASI } from "@bjorn3/browser_wasi_shim";
+import { Fd, WASI, wasi as wasiOrigin } from "@bjorn3/browser_wasi_shim";
 import { appendData, errStatus, getImagename, sendCert, serveIfInitMsg, sockWaitForReadable, streamCtrl, streamData, streamLen, streamStatus, wasiHackSocket } from "./worker-util";
-import { Ciovec } from "@bjorn3/browser_wasi_shim/wasi_defs";
 import { Event, EventType, Subscription } from "./wasi-util";
 
 onmessage = (msg) => {
@@ -84,7 +78,7 @@ function wasiHack(
         if ((fd == 1) || (fd == 2) || (fd == certfd)) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
-            var iovecs = Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
+            var iovecs = wasiOrigin.Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
             var wtotal = 0
             for (let i = 0; i < iovecs.length; i++) {
                 var iovec = iovecs[i];

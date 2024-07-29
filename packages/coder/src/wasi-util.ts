@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////
-import { EVENTTYPE_CLOCK, EVENTTYPE_FD_READ, EVENTTYPE_FD_WRITE } from '@bjorn3/browser_wasi_shim/wasi_defs';
+import { wasi  } from '@bjorn3/browser_wasi_shim';
 //
 // event-related classes adopted from the on-going discussion
 // towards poll_oneoff support in browser_wasi_sim project.
@@ -19,11 +19,11 @@ export class EventType {
 
     static from_u8(data: number)/*: EventType*/ {
         switch (data) {
-            case EVENTTYPE_CLOCK:
+            case wasi.EVENTTYPE_CLOCK:
                 return new EventType("clock");
-            case EVENTTYPE_FD_READ:
+            case wasi.EVENTTYPE_FD_READ:
                 return new EventType("fd_read");
-            case EVENTTYPE_FD_WRITE:
+            case wasi.EVENTTYPE_FD_WRITE:
                 return new EventType("fd_write");
             default:
                 throw "Invalid event type " + String(data);
@@ -33,11 +33,11 @@ export class EventType {
     to_u8()/*: number*/ {
         switch (this.variant) {
             case "clock":
-                return EVENTTYPE_CLOCK;
+                return wasi.EVENTTYPE_CLOCK;
             case "fd_read":
-                return EVENTTYPE_FD_READ;
+                return wasi.EVENTTYPE_FD_READ;
             case "fd_write":
-                return EVENTTYPE_FD_WRITE;
+                return wasi.EVENTTYPE_FD_WRITE;
             default:
                 throw "unreachable";
         }

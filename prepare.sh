@@ -15,4 +15,4 @@ clone_and_checkout() {
 }
 
 clone_and_checkout "https://github.com/winetree94/xterm-pty.git" "packages/xterm-pty" "features/modules"
-clone_and_checkout "https://github.com/winetree94/browser_wasi_shim.git" "packages/browser_wasi_shim" "features/modules"
+# clone_and_checkout "https://github.com/winetree94/browser_wasi_shim.git" "packages/browser_wasi_shim" "features/modules"

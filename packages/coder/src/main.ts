@@ -1,10 +1,9 @@
 import 'xterm/css/xterm.css';
 import './style.css'
 import { Terminal } from 'xterm';
-import { openpty, Termios, TtyServer } from 'xterm-pty';
+import { Flags, openpty, Termios, TtyServer } from 'xterm-pty';
 import { delegate } from './ws-delegate';
 import { newStack } from './stack';
-import { Flags } from './flags';
 
 const xterm = new Terminal();
 xterm.open(document.getElementById("terminal")!);
