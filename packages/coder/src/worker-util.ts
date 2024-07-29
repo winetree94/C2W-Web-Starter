@@ -4,17 +4,9 @@ import { WASI, File, PreopenDirectory, wasi as wasiOrigin } from '@bjorn3/browse
 export var streamStatus: Int32Array;
 export var streamLen: Int32Array;
 export var streamData: Uint8Array;
-
-export function registerSocketBuffer(
-    shared: SharedArrayBuffer
-) {
-    streamCtrl = new Int32Array(shared, 0, 1);
-    streamStatus = new Int32Array(shared, 4, 1);
-    streamLen = new Int32Array(shared, 8, 1);
-    streamData = new Uint8Array(shared, 12);
-}
-
 var imagename: string;
+var chunkCount: number;
+
 export function serveIfInitMsg(
     msg: MessageEvent
 ) {
@@ -26,12 +18,39 @@ export function serveIfInitMsg(
             registerSocketBuffer(shared);
             if (req_.imagename)
                 imagename = req_.imagename;
+            if (req_.chunkCount)
+                chunkCount = req_.chunkCount;
             return true;
         }
     }
 
     return false;
 }
+
+// fetchChunks fetches specified number of consecutive chunks and
+// passes the concatinated array buffer to the callback.
+export function fetchChunks() {
+    const files = Array.from({ length: chunkCount })
+        .map((_, i) => `/wasms/${imagename}.wasm.part${i}`);
+
+    return Promise.all(
+        files.map((file) => fetch(file).then((res) => res.arrayBuffer()))
+    ).then((resps) => {
+        var results = resps.map((r) => r);
+        var blob = new Blob(results);
+        return blob.arrayBuffer();
+    });
+}
+
+export function registerSocketBuffer(
+    shared: SharedArrayBuffer
+) {
+    streamCtrl = new Int32Array(shared, 0, 1);
+    streamStatus = new Int32Array(shared, 4, 1);
+    streamLen = new Int32Array(shared, 8, 1);
+    streamData = new Uint8Array(shared, 12);
+}
+
 
 export function getImagename() {
     return imagename;

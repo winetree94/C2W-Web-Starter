@@ -4,6 +4,6 @@ RUN \
   apt-get update && apt-get upgrade -y
 
 RUN \
-  apt-get install curl sysbench htop vim nodejs -y
+  apt-get install curl -y
 
 ENTRYPOINT ["/bin/bash"]

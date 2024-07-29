@@ -4,6 +4,7 @@ import { Terminal } from 'xterm';
 import { Flags, openpty, Termios, TtyServer } from 'xterm-pty';
 import { delegate } from './ws-delegate';
 import { newStack } from './stack';
+import chunks from './chunks.json';
 
 const xterm = new Terminal();
 xterm.open(document.getElementById("terminal")!);
@@ -21,7 +22,13 @@ termiosAny.lflag &= ~(Flags.ECHO | Flags.ECHONL | Flags.ICANON | Flags.ISIG | Fl
 
 //termios.cflag &= ~(CSIZE | PARENB);
 //termios.cflag |= CS8;
-slave.ioctl("TCSETS", new Termios(termios.iflag, termios.oflag, termios.cflag, termios.lflag, termios.cc));
+slave.ioctl("TCSETS", new Termios(
+  termios.iflag,
+  termios.oflag,
+  termios.cflag,
+  termios.lflag,
+  termios.cc
+));
 xterm.loadAddon(master);
 // const worker = new Worker(
 // "/worker.js" + location.search
@@ -35,14 +42,19 @@ const worker = new Worker(
 
 var nwStack;
 var netParam = getNetParam();
-var workerImage = location.origin + "/wasms/out.wasm";
+var workerImage = "ubuntu";
 if (netParam) {
   if (netParam.mode == 'delegate') {
-    nwStack = delegate(worker, workerImage, netParam.param);
+    nwStack = delegate(
+      worker,
+      workerImage,
+      netParam.param
+    );
   } else if (netParam.mode == 'browser') {
     nwStack = newStack(
       worker,
       workerImage,
+      chunks['ubuntu'].chunkCount,
       // new Worker(
       //     "/stack-worker.js" + location.search
       // ),

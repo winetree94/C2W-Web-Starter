@@ -1,11 +1,16 @@
 import { copyFileSync } from "fs";
+import { copyDirectoryContents, resetDirectory } from "./utils";
 
-copyFileSync(
-  "dist/out.wasm",
-  "../coder/public/wasms/out.wasm"
-);
+const runner = async () => {
+  await resetDirectory("../coder/public/wasms");
+  await copyDirectoryContents(
+    "dist",
+    "../coder/public/wasms"
+  );
+  copyFileSync(
+    './dist/chunks.json',
+    '../coder/src/chunks.json'
+  );
+}
 
-copyFileSync(
-  "dist/c2w-net-proxy.wasm",
-  "../coder/public/wasms/c2w-net-proxy.wasm"
-);
+runner();

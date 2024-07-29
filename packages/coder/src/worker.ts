@@ -1,9 +1,10 @@
 import { Fd, WASI, wasi as wasiorigin } from "@bjorn3/browser_wasi_shim";
-import { errStatus, getCertDir, getImagename, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
+import { errStatus, fetchChunks, getCertDir, getImagename, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
 import { TtyClient } from 'xterm-pty';
 import { Event, EventType, Subscription } from "./wasi-util";
 
-onmessage = (msg) => {
+onmessage = async (msg) => {
+    console.log(msg);
     if (serveIfInitMsg(msg)) {
         return;
     }
@@ -13,45 +14,48 @@ onmessage = (msg) => {
     var fds: Fd[] = [];
     var netParam = getNetParam();
     var listenfd = 3;
-    fetch(getImagename(), { credentials: 'same-origin' }).then((resp) => {
-        resp['arrayBuffer']().then((wasm) => {
-            if (netParam) {
-                if (netParam.mode == 'delegate') {
-                    args = ['arg0', '--net=socket', '--mac', genmac()];
-                } else if (netParam.mode == 'browser') {
-                    recvCert().then((cert) => {
-                        var certDir = getCertDir(cert);
-                        fds = [
-                            //@ts-ignore
-                            undefined, // 0: stdin
-                            //@ts-ignore
-                            undefined, // 1: stdout
-                            //@ts-ignore
-                            undefined, // 2: stderr
-                            certDir,   // 3: certificates dir
-                            //@ts-ignore
-                            undefined, // 4: socket listenfd
-                            //@ts-ignore
-                            undefined, // 5: accepted socket fd (multi-connection is unsupported)
-                            // 6...: used by wasi shim
-                        ];
-                        args = ['arg0', '--net=socket=listenfd=4', '--mac', genmac()];
-                        env = [
-                            "SSL_CERT_FILE=/.wasmenv/proxy.crt",
-                            "https_proxy=http://192.168.127.253:80",
-                            "http_proxy=http://192.168.127.253:80",
-                            "HTTPS_PROXY=http://192.168.127.253:80",
-                            "HTTP_PROXY=http://192.168.127.253:80"
-                        ];
-                        listenfd = 4;
-                        startWasi(wasm, ttyClient, args, env, fds, listenfd, 5);
-                    });
-                    return;
-                }
-            }
-            startWasi(wasm, ttyClient, args, env, fds, listenfd, 5);
-        })
-    });
+
+    const wasm = await fetchChunks();
+    if (netParam) {
+        if (netParam.mode == 'delegate') {
+            args = ['arg0', '--net=socket', '--mac', genmac()];
+        } else if (netParam.mode == 'browser') {
+            recvCert().then((cert) => {
+                var certDir = getCertDir(cert);
+                fds = [
+                    //@ts-ignore
+                    undefined, // 0: stdin
+                    //@ts-ignore
+                    undefined, // 1: stdout
+                    //@ts-ignore
+                    undefined, // 2: stderr
+                    certDir,   // 3: certificates dir
+                    //@ts-ignore
+                    undefined, // 4: socket listenfd
+                    //@ts-ignore
+                    undefined, // 5: accepted socket fd (multi-connection is unsupported)
+                    // 6...: used by wasi shim
+                ];
+                args = ['arg0', '--net=socket=listenfd=4', '--mac', genmac()];
+                env = [
+                    "SSL_CERT_FILE=/.wasmenv/proxy.crt",
+                    "https_proxy=http://192.168.127.253:80",
+                    "http_proxy=http://192.168.127.253:80",
+                    "HTTPS_PROXY=http://192.168.127.253:80",
+                    "HTTP_PROXY=http://192.168.127.253:80"
+                ];
+                listenfd = 4;
+                startWasi(wasm, ttyClient, args, env, fds, listenfd, 5);
+            });
+            return;
+        }
+    }
+    startWasi(wasm, ttyClient, args, env, fds, listenfd, 5);
+    // fetch(getImagename(), { credentials: 'same-origin' }).then((resp) => {
+    //     resp['arrayBuffer']().then((wasm) => {
+
+    //     })
+    // });
 };
 
 function startWasi(

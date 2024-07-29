@@ -24,3 +24,5 @@ public/wasms/*
 *.njsproj
 *.sln
 *.sw?
+
+src/chunks.json

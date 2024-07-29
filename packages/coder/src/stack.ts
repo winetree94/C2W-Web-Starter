@@ -1,6 +1,7 @@
 export function newStack(
     worker: Worker,
     workerImageName: string,
+    chunkCount: number,
     stackWorker: Worker,
     stackImageName: string
 ) {
@@ -24,10 +25,14 @@ export function newStack(
         done: false
     }
     stackWorker.onmessage = connect("proxy", proxyShared, proxyConn, certbuf);
-    stackWorker.postMessage({ type: "init", buf: proxyShared, imagename: stackImageName });
+    stackWorker.postMessage({
+        type: "init",
+        buf: proxyShared,
+        imagename: stackImageName
+    });
 
     var vmShared = new SharedArrayBuffer(12 + 4096);
-    worker.postMessage({ type: "init", buf: vmShared, imagename: workerImageName });
+    worker.postMessage({ type: "init", buf: vmShared, imagename: workerImageName, chunkCount });
     return connect("vm", vmShared, vmConn, certbuf);
 }
 
