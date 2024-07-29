@@ -1,3 +1,0 @@
-[submodule "submodules/browser_wasi_shim"]
-	path = submodules/browser_wasi_shim
-	url = https://github.com/bjorn3/browser_wasi_shim.git
