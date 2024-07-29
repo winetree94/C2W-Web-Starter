@@ -1,24 +1,9 @@
 import { spawnSync } from 'child_process';
 import { copyFileSync } from 'fs';
 import { createJson, resetDirectory, splitFile } from './utils';
+import buildInfo from '../images.json';
 
 const PROJECT_ROOT = process.cwd();
-
-const buildInfo: {
-  name: string,
-  dockerfile?: string,
-  containerName: string,
-  wasmName: string,
-}[] = [{
-  name: 'ubuntu',
-  dockerfile: './dockerfiles/Jammy.Dockerfile',
-  containerName: 'winetree94:ubuntu22.04',
-  wasmName: 'ubuntu.wasm',
-}, {
-  name: 'node',
-  containerName: 'node:22-alpine3.19',
-  wasmName: 'node.wasm',
-}];
 
 const runner = async () => {
   await resetDirectory('./dist');
@@ -54,7 +39,6 @@ const runner = async () => {
     );
     chunkCounts.push(chunkCount);
   }
-  console.log(chunkCounts);
   copyFileSync('./tmp/c2w-net-proxy.wasm', './dist/c2w-net-proxy.wasm');
   const resultJson = buildInfo.reduce<{
     [key: string]: {

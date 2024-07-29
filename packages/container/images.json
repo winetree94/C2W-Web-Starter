@@ -1,0 +1,13 @@
+[
+  {
+    "name": "ubuntu",
+    "dockerfile": "./dockerfiles/Jammy.Dockerfile",
+    "containerName": "winetree94:ubuntu22.04",
+    "wasmName": "ubuntu.wasm"
+  },
+  {
+    "name": "node",
+    "containerName": "node:22-alpine3.19",
+    "wasmName": "node.wasm"
+  }
+]

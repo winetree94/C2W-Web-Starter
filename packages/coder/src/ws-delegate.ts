@@ -1,6 +1,7 @@
 export function delegate(
     worker: Worker,
     workerImageName: string,
+    chunkCount: number,
     address: string
 ) {
     var shared = new SharedArrayBuffer(8 + 4096);
@@ -8,7 +9,7 @@ export function delegate(
     var streamStatus = new Int32Array(shared, 4, 1);
     var streamLen = new Int32Array(shared, 8, 1);
     var streamData = new Uint8Array(shared, 12);
-    worker.postMessage({type: "init", buf: shared, imagename: workerImageName});
+    worker.postMessage({type: "init", buf: shared, imagename: workerImageName, chunkCount });
 
     var opts = 'binary';
     var ongoing = false;

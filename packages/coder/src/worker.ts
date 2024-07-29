@@ -1,9 +1,9 @@
 import { Fd, WASI, wasi as wasiorigin } from "@bjorn3/browser_wasi_shim";
-import { errStatus, fetchChunks, getCertDir, getImagename, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
+import { errStatus, fetchChunks, getCertDir, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
 import { TtyClient } from 'xterm-pty';
 import { Event, EventType, Subscription } from "./wasi-util";
 
-onmessage = async (msg) => {
+onmessage = async (msg: MessageEvent) => {
     console.log(msg);
     if (serveIfInitMsg(msg)) {
         return;

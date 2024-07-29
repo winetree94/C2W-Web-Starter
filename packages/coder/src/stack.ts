@@ -1,3 +1,5 @@
+import { InitMessage } from "./types";
+
 export function newStack(
     worker: Worker,
     workerImageName: string,
@@ -28,16 +30,21 @@ export function newStack(
     stackWorker.postMessage({
         type: "init",
         buf: proxyShared,
-        imagename: stackImageName
+        imagename: stackImageName,
     });
 
     var vmShared = new SharedArrayBuffer(12 + 4096);
-    worker.postMessage({ type: "init", buf: vmShared, imagename: workerImageName, chunkCount });
+    worker.postMessage(<InitMessage>{
+        type: "init",
+        buf: vmShared,
+        imagename: workerImageName,
+        chunkCount
+    });
     return connect("vm", vmShared, vmConn, certbuf);
 }
 
 export function connect(
-    name: string,
+    name: 'proxy' | 'vm',
     shared: SharedArrayBuffer,
     conn: {
         sendbuf: { buf: Uint8Array },

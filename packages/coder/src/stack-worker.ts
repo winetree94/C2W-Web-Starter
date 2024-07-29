@@ -2,7 +2,7 @@ import { Fd, WASI, wasi as wasiOrigin } from "@bjorn3/browser_wasi_shim";
 import { appendData, errStatus, getImagename, sendCert, serveIfInitMsg, sockWaitForReadable, streamCtrl, streamData, streamLen, streamStatus, wasiHackSocket } from "./worker-util";
 import { Event, EventType, Subscription } from "./wasi-util";
 
-onmessage = (msg) => {
+onmessage = async (msg: MessageEvent) => {
     console.log('init')
     serveIfInitMsg(msg);
     var fds: Fd[] = [
@@ -27,20 +27,20 @@ onmessage = (msg) => {
     var wasi = new WASI(args, env, fds);
     wasiHack(wasi, certfd, 5);
     wasiHackSocket(wasi, listenfd, 5);
-    fetch(getImagename(), { credentials: 'same-origin' }).then((resp) => {
-        resp['arrayBuffer']().then((wasm) => {
-            WebAssembly.instantiate(wasm, {
-                "wasi_snapshot_preview1": wasi.wasiImport,
-                "env": envHack(wasi),
-            }).then((inst) => {
-                /**
-                 * @todo type missmatching
-                 */
-                wasi.start(inst.instance as {
-                    exports: { memory: WebAssembly.Memory; _start: () => unknown };
-                });
-            });
-        })
+
+    const wasm = await fetch(getImagename(), { credentials: 'same-origin' })
+        .then((res) => res.arrayBuffer());
+
+    WebAssembly.instantiate(wasm, {
+        "wasi_snapshot_preview1": wasi.wasiImport,
+        "env": envHack(wasi),
+    }).then((inst) => {
+        /**
+         * @todo type missmatching
+         */
+        wasi.start(inst.instance as {
+            exports: { memory: WebAssembly.Memory; _start: () => unknown };
+        });
     });
 };
 
