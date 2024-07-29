@@ -1,14 +1,8 @@
-// importScripts("https://cdn.jsdelivr.net/npm/xterm-pty@0.9.4/workerTools.js");
-// importScripts(location.origin + "/browser_wasi_shim/index.js");
-// importScripts(location.origin + "/browser_wasi_shim/wasi_defs.js");
-// importScripts("/worker-util.js");
-// importScripts("/wasi-util.js");
-
-import { WASI } from "@bjorn3/browser_wasi_shim";
-import { errStatus, getCertDir, getImagename, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
-import { TtyClient } from 'xterm-pty/client-server/ttyClient';
-import { Ciovec, Iovec } from "@bjorn3/browser_wasi_shim/wasi_defs";
-import { Event, EventType, Subscription } from "./wasi-util";
+importScripts("https://cdn.jsdelivr.net/npm/xterm-pty@0.9.4/workerTools.js");
+importScripts(location.origin + "/browser_wasi_shim/index.js");
+importScripts(location.origin + "/browser_wasi_shim/wasi_defs.js");
+importScripts(location.origin + "/worker-util.js");
+importScripts(location.origin + "/wasi-util.js");
 
 onmessage = (msg) => {
     if (serveIfInitMsg(msg)) {
@@ -68,7 +62,7 @@ function startWasi(wasm, ttyClient, args, env, fds, listenfd, connfd) {
 }
 
 // wasiHack patches wasi object for integrating it to xterm-pty.
-function wasiHack(wasi: WASI, ttyClient, connfd) {
+function wasiHack(wasi, ttyClient, connfd) {
     // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
     const ERRNO_INVAL = 28;
     const ERRNO_AGAIN= 6;
@@ -79,7 +73,7 @@ function wasiHack(wasi: WASI, ttyClient, connfd) {
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
             var iovecs = Iovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
             var nread = 0;
-            for (let i = 0; i < iovecs.length; i++) {
+            for (i = 0; i < iovecs.length; i++) {
                 var iovec = iovecs[i];
                 if (iovec.buf_len == 0) {
                     continue;
@@ -103,7 +97,7 @@ function wasiHack(wasi: WASI, ttyClient, connfd) {
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
             var iovecs = Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
             var wtotal = 0
-            for (let i = 0; i < iovecs.length; i++) {
+            for (i = 0; i < iovecs.length; i++) {
                 var iovec = iovecs[i];
                 var buf = buffer8.slice(iovec.buf, iovec.buf + iovec.buf_len);
                 if (buf.length == 0) {

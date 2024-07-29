@@ -1,24 +1,16 @@
-export var streamCtrl: Int32Array;
-import { WASI } from '@bjorn3/browser_wasi_shim';
-import { Directory, File, PreopenDirectory } from '@bjorn3/browser_wasi_shim/fs_mem';
-import { Ciovec, Iovec, WHENCE_SET } from '@bjorn3/browser_wasi_shim/wasi_defs';
-export var streamStatus: Int32Array;
-export var streamLen: Int32Array;
-export var streamData: Uint8Array;
-
-export function registerSocketBuffer(
-    shared: SharedArrayBuffer
-) {
+var streamCtrl;
+var streamStatus;
+var streamLen;
+var streamData;
+function registerSocketBuffer(shared){
     streamCtrl = new Int32Array(shared, 0, 1);
     streamStatus = new Int32Array(shared, 4, 1);
     streamLen = new Int32Array(shared, 8, 1);
     streamData = new Uint8Array(shared, 12);
 }
 
-var imagename: string;
-export function serveIfInitMsg(
-    msg: MessageEvent
-) {
+var imagename;
+function serveIfInitMsg(msg) {
     const req_ = msg.data;
     if (typeof req_ == "object"){
         if (req_.type == "init") {
@@ -34,23 +26,21 @@ export function serveIfInitMsg(
     return false;
 }
 
-export function getImagename() {
+function getImagename() {
     return imagename;
 }
 
-export const errStatus = {
+const errStatus = {
     val: 0,
 };
 
-export function sockAccept(){
+function sockAccept(){
     streamCtrl[0] = 0;
     postMessage({type: "accept"});
     Atomics.wait(streamCtrl, 0, 0);
     return streamData[0] == 1;
 }
-export function sockSend(
-    data: ArrayBuffer
-) {
+function sockSend(data){
     streamCtrl[0] = 0;
     postMessage({type: "send", buf: data});
     Atomics.wait(streamCtrl, 0, 0);
@@ -59,9 +49,7 @@ export function sockSend(
         return errStatus;
     }
 }
-export function sockRecv(
-    len: number
-) {
+function sockRecv(len){
     streamCtrl[0] = 0;
     postMessage({type: "recv", len: len});
     Atomics.wait(streamCtrl, 0, 0);
@@ -74,9 +62,7 @@ export function sockRecv(
     return res;
 }
 
-export function sockWaitForReadable(
-    timeout: number = 0
-) {
+function sockWaitForReadable(timeout){
     streamCtrl[0] = 0;
     postMessage({type: "recv-is-readable", timeout: timeout});
     Atomics.wait(streamCtrl, 0, 0);
@@ -87,9 +73,7 @@ export function sockWaitForReadable(
     return streamData[0] == 1;
 }
 
-export function sendCert(
-    data: ArrayBuffer
-) {
+function sendCert(data){
     streamCtrl[0] = 0;
     postMessage({type: "send_cert", buf: data});
     Atomics.wait(streamCtrl, 0, 0);
@@ -99,7 +83,7 @@ export function sendCert(
     }
 }
 
-export function recvCert(){
+function recvCert(){
     var buf = new Uint8Array(0);
     return new Promise((resolve, reject) => {
         function getCert(){
@@ -123,35 +107,23 @@ export function recvCert(){
     });
 }
 
-export function appendData(
-    data1: ArrayBuffer,
-    data2: ArrayBuffer
-) {
-    const buf2 = new Uint8Array(data1.byteLength + data2.byteLength);
+function appendData(data1, data2) {
+    buf2 = new Uint8Array(data1.byteLength + data2.byteLength);
     buf2.set(new Uint8Array(data1), 0);
     buf2.set(new Uint8Array(data2), data1.byteLength);
     return buf2;
 }
 
-export function getCertDir(
-    cert: ArrayBuffer
-) {
-    // new Directory([
-    //     "proxy.crt", new File("proxy.crt", cert)
-    // ])
-    const map = new Map();
-    map.set("proxy.crt", new File("proxy.crt", cert));
-    var certDir = new PreopenDirectory("/.wasmenv", map);
+function getCertDir(cert) {
+    var certDir = new PreopenDirectory("/.wasmenv", {
+        "proxy.crt": new File(cert)
+    });
     var _path_open = certDir.path_open;
     certDir.path_open = (e, r, s, n, a, d) => {
         var ret = _path_open.apply(certDir, [e, r, s, n, a, d]);
         if (ret.fd_obj != null) {
             var o = ret.fd_obj;
-            ret.fd_obj.fd_pread = (
-                view8: Uint8Array,
-                iovs,
-                offset
-            ) => {
+            ret.fd_obj.fd_pread = (view8, iovs, offset) => {
                 var old_offset = o.file_pos;
                 var r = o.fd_seek(offset, WHENCE_SET);
                 if (r.ret != 0) {
@@ -167,16 +139,11 @@ export function getCertDir(
         }
         return ret;
     }
-    certDir.dir.contents.set(".", certDir.dir);
-    // certDir.dir.contents["."] = certDir.dir;
+    certDir.dir.contents["."] = certDir.dir;
     return certDir;
 }
 
-export function wasiHackSocket(
-    wasi: WASI,
-    listenfd: number,
-    connfd: number
-) {
+function wasiHackSocket(wasi, listenfd, connfd) {
     // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
     const ERRNO_INVAL = 28;
     const ERRNO_AGAIN= 6;
@@ -250,7 +217,7 @@ export function wasiHackSocket(
         var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
         var iovecs = Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
         var wtotal = 0
-        for (let i = 0; i < iovecs.length; i++) {
+        for (i = 0; i < iovecs.length; i++) {
             var iovec = iovecs[i];
             var buf = buffer8.slice(iovec.buf, iovec.buf + iovec.buf_len);
             if (buf.length == 0) {
@@ -283,7 +250,7 @@ export function wasiHackSocket(
         var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
         var iovecs = Iovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
         var nread = 0;
-        for (let i = 0; i < iovecs.length; i++) {
+        for (i = 0; i < iovecs.length; i++) {
             var iovec = iovecs[i];
             if (iovec.buf_len == 0) {
                 continue;

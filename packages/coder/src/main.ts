@@ -26,6 +26,9 @@ termiosAny.lflag &= ~(Flags.ECHO | Flags.ECHONL | Flags.ICANON | Flags.ISIG | Fl
 //termios.cflag |= CS8;
 slave.ioctl("TCSETS", new Termios(termios.iflag, termios.oflag, termios.cflag, termios.lflag, termios.cc));
 xterm.loadAddon(master as any);
+// const worker = new Worker(
+// "/worker.js" + location.search
+// );
 const worker = new Worker(
   new URL("./worker.ts" + location.search, import.meta.url),
   {
@@ -43,6 +46,9 @@ if (netParam) {
     nwStack = newStack(
       worker,
       workerImage,
+      // new Worker(
+      //     "/stack-worker.js" + location.search
+      // ),
       new Worker(
         new URL(
           "./stack-worker.ts" + location.search,
