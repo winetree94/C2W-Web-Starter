@@ -1,11 +1,9 @@
 import 'xterm/css/xterm.css';
 import './style.css'
 import { Terminal } from 'xterm';
-import { openpty } from 'xterm-pty';
-import { Termios } from 'xterm-pty/termios';
+import { openpty, Termios, TtyServer } from 'xterm-pty';
 import { delegate } from './ws-delegate';
 import { newStack } from './stack';
-import { TtyServer } from 'xterm-pty/client-server/ttyServer';
 import { Flags } from './flags';
 
 const xterm = new Terminal();
@@ -25,7 +23,7 @@ termiosAny.lflag &= ~(Flags.ECHO | Flags.ECHONL | Flags.ICANON | Flags.ISIG | Fl
 //termios.cflag &= ~(CSIZE | PARENB);
 //termios.cflag |= CS8;
 slave.ioctl("TCSETS", new Termios(termios.iflag, termios.oflag, termios.cflag, termios.lflag, termios.cc));
-xterm.loadAddon(master as any);
+xterm.loadAddon(master);
 // const worker = new Worker(
 // "/worker.js" + location.search
 // );

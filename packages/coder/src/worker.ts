@@ -1,6 +1,6 @@
 import { Fd, WASI } from "@bjorn3/browser_wasi_shim";
 import { errStatus, getCertDir, getImagename, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
-import { TtyClient } from 'xterm-pty/client-server/ttyClient';
+import { TtyClient } from 'xterm-pty';
 import { Ciovec, Iovec } from "@bjorn3/browser_wasi_shim/wasi_defs";
 import { Event, EventType, Subscription } from "./wasi-util";
 
