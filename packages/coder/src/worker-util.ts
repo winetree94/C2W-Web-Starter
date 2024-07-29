@@ -21,11 +21,11 @@ export function serveIfInitMsg(
     msg: MessageEvent
 ) {
     const req_ = msg.data;
-    if (typeof req_ == "object"){
+    if (typeof req_ == "object") {
         if (req_.type == "init") {
             if (req_.buf)
                 var shared = req_.buf;
-                registerSocketBuffer(shared);
+            registerSocketBuffer(shared);
             if (req_.imagename)
                 imagename = req_.imagename;
             return true;
@@ -43,9 +43,9 @@ export const errStatus = {
     val: 0,
 };
 
-export function sockAccept(){
+export function sockAccept() {
     streamCtrl[0] = 0;
-    postMessage({type: "accept"});
+    postMessage({ type: "accept" });
     Atomics.wait(streamCtrl, 0, 0);
     return streamData[0] == 1;
 }
@@ -53,7 +53,7 @@ export function sockSend(
     data: ArrayBuffer
 ) {
     streamCtrl[0] = 0;
-    postMessage({type: "send", buf: data});
+    postMessage({ type: "send", buf: data });
     Atomics.wait(streamCtrl, 0, 0);
     if (streamStatus[0] < 0) {
         errStatus.val = streamStatus[0]
@@ -64,11 +64,11 @@ export function sockRecv(
     len: number
 ) {
     streamCtrl[0] = 0;
-    postMessage({type: "recv", len: len});
+    postMessage({ type: "recv", len: len });
     Atomics.wait(streamCtrl, 0, 0);
     if (streamStatus[0] < 0) {
         errStatus.val = streamStatus[0]
-        return errStatus;
+        throw new Error("sockRecv failed: " + errStatus);
     }
     let ddlen = streamLen[0];
     var res = streamData.slice(0, ddlen);
@@ -79,7 +79,7 @@ export function sockWaitForReadable(
     timeout: number = 0
 ) {
     streamCtrl[0] = 0;
-    postMessage({type: "recv-is-readable", timeout: timeout});
+    postMessage({ type: "recv-is-readable", timeout: timeout });
     Atomics.wait(streamCtrl, 0, 0);
     if (streamStatus[0] < 0) {
         errStatus.val = streamStatus[0]
@@ -92,7 +92,7 @@ export function sendCert(
     data: ArrayBuffer
 ) {
     streamCtrl[0] = 0;
-    postMessage({type: "send_cert", buf: data});
+    postMessage({ type: "send_cert", buf: data });
     Atomics.wait(streamCtrl, 0, 0);
     if (streamStatus[0] < 0) {
         errStatus.val = streamStatus[0]
@@ -100,12 +100,12 @@ export function sendCert(
     }
 }
 
-export function recvCert(){
+export function recvCert() {
     var buf = new Uint8Array(0);
-    return new Promise((resolve, reject) => {
-        function getCert(){
+    return new Promise<Uint8Array>((resolve) => {
+        function getCert() {
             streamCtrl[0] = 0;
-            postMessage({type: "recv_cert"});
+            postMessage({ type: "recv_cert" });
             Atomics.wait(streamCtrl, 0, 0);
             if (streamStatus[0] < 0) {
                 setTimeout(getCert, 100);
@@ -148,16 +148,22 @@ export function getCertDir(
         var ret = _path_open.apply(certDir, [e, r, s, n, a, d]);
         if (ret.fd_obj != null) {
             var o = ret.fd_obj;
+            /**
+             * @todo type missmatching
+             */
+            //@ts-ignore
             ret.fd_obj.fd_pread = (
                 view8: Uint8Array,
                 // iovs,
-                offset
+                offset: bigint
             ) => {
+                //@ts-ignore
                 var old_offset = o.file_pos;
                 var r = o.fd_seek(offset, WHENCE_SET);
                 if (r.ret != 0) {
                     return { ret: -1, nread: 0 };
                 }
+                //@ts-ignore
                 var read_ret = o.fd_read(view8);
                 r = o.fd_seek(old_offset, WHENCE_SET);
                 if (r.ret != 0) {
@@ -180,7 +186,7 @@ export function wasiHackSocket(
 ) {
     // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
     const ERRNO_INVAL = 28;
-    const ERRNO_AGAIN= 6;
+    const ERRNO_AGAIN = 6;
     var connfdUsed = false;
     var connbuf = new Uint8Array(0);
     var _fd_close = wasi.wasiImport.fd_close;
@@ -207,7 +213,7 @@ export function wasiHackSocket(
     }
     var _fd_fdstat_get = wasi.wasiImport.fd_fdstat_get;
     wasi.wasiImport.fd_fdstat_get = (fd, fdstat_ptr) => {
-        if ((fd == listenfd) || (fd == connfd) && connfdUsed){
+        if ((fd == listenfd) || (fd == connfd) && connfdUsed) {
             let buffer = new DataView(wasi.inst.exports.memory.buffer);
             // https://github.com/WebAssembly/WASI/blob/snapshot-01/phases/snapshot/docs.md#-fdstat-struct
             buffer.setUint8(fdstat_ptr, 6); // filetype = 6 (socket_stream)
@@ -218,7 +224,7 @@ export function wasiHackSocket(
     }
     var _fd_prestat_get = wasi.wasiImport.fd_prestat_get;
     wasi.wasiImport.fd_prestat_get = (fd, prestat_ptr) => {
-        if ((fd == listenfd) || (fd == connfd)){ // reserve socket-related fds
+        if ((fd == listenfd) || (fd == connfd)) { // reserve socket-related fds
             let buffer = new DataView(wasi.inst.exports.memory.buffer);
             buffer.setUint8(prestat_ptr, 1);
             return 0;
@@ -289,8 +295,10 @@ export function wasiHackSocket(
             if (iovec.buf_len == 0) {
                 continue;
             }
-            var data = sockRecv(iovec.buf_len);
-            if (data == errStatus) {
+            var data;
+            try {
+                data = sockRecv(iovec.buf_len);
+            } catch (e) {
                 return ERRNO_INVAL;
             }
             buffer8.set(data, iovec.buf);

@@ -12,11 +12,17 @@ onmessage = (msg) => {
     console.log('init')
     serveIfInitMsg(msg);
     var fds: Fd[] = [
+        //@ts-ignore
         undefined, // 0: stdin
+        //@ts-ignore
         undefined, // 1: stdout
+        //@ts-ignore
         undefined, // 2: stderr
+        //@ts-ignore
         undefined, // 3: receive certificates
+        //@ts-ignore
         undefined, // 4: socket listenfd
+        //@ts-ignore
         undefined, // 5: accepted socket fd (multi-connection is unsupported)
         // 6...: used by wasi shim
     ];
@@ -33,7 +39,12 @@ onmessage = (msg) => {
                 "wasi_snapshot_preview1": wasi.wasiImport,
                 "env": envHack(wasi),
             }).then((inst) => {
-                wasi.start(inst.instance);
+                /**
+                 * @todo type missmatching
+                 */
+                wasi.start(inst.instance as {
+                    exports: { memory: WebAssembly.Memory; _start: () => unknown };
+                });
             });
         })
     });
@@ -107,10 +118,13 @@ function wasiHack(
         let clockSub;
         let timeout = Number.MAX_VALUE;
         for (let sub of in_) {
+            //@ts-ignore
             if (sub.u.tag.variant == "fd_read") {
+                //@ts-ignore
                 if ((sub.u.data.fd != 0) && (sub.u.data.fd != connfd)) {
                     return ERRNO_INVAL; // only fd=0 and connfd is supported as of now (FIXME)
                 }
+                //@ts-ignore
                 if (sub.u.data.fd == 0) {
                     isReadPollStdin = true;
                     pollSubStdin = sub;
@@ -118,8 +132,11 @@ function wasiHack(
                     isReadPollConn = true;
                     pollSubConn = sub;
                 }
+                //@ts-ignore
             } else if (sub.u.tag.variant == "clock") {
+                //@ts-ignore
                 if (sub.u.data.timeout < timeout) {
+                    //@ts-ignore
                     timeout = sub.u.data.timeout
                     isClockPoll = true;
                     clockSub = sub;
@@ -157,9 +174,15 @@ function wasiHack(
     }
 }
 
-function envHack(wasi) {
+function envHack(wasi: WASI) {
     return {
-        http_send: function (addressP, addresslen, reqP, reqlen, idP) {
+        http_send: function (
+            addressP: number,
+            addresslen: number,
+            reqP: number,
+            reqlen: number,
+            idP: number
+        ) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var address = new Uint8Array(wasi.inst.exports.memory.buffer, addressP, addresslen);
             var req = new Uint8Array(wasi.inst.exports.memory.buffer, reqP, reqlen);
@@ -177,7 +200,13 @@ function envHack(wasi) {
             buffer.setUint32(idP, id, true);
             return 0;
         },
-        http_writebody: function (id, bodyP, bodylen, nwrittenP, isEOF) {
+        http_writebody: function (
+            id: number,
+            bodyP: number,
+            bodylen: number,
+            nwrittenP: number,
+            isEOF: number
+        ) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var body = new Uint8Array(wasi.inst.exports.memory.buffer, bodyP, bodylen);
             streamCtrl[0] = 0;
@@ -194,7 +223,10 @@ function envHack(wasi) {
             buffer.setUint32(nwrittenP, bodylen, true);
             return 0;
         },
-        http_isreadable: function (id, isOKP) {
+        http_isreadable: function (
+            id: number,
+            isOKP: number
+        ) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             streamCtrl[0] = 0;
             postMessage({ type: "http_isreadable", id: id });
@@ -209,7 +241,13 @@ function envHack(wasi) {
             buffer.setUint32(isOKP, readable, true);
             return 0;
         },
-        http_recv: function (id, respP, bufsize, respsizeP, isEOFP) {
+        http_recv: function (
+            id: number,
+            respP: number,
+            bufsize: number,
+            respsizeP: number,
+            isEOFP: number
+        ) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
 
@@ -230,7 +268,13 @@ function envHack(wasi) {
             }
             return 0;
         },
-        http_readbody: function (id, bodyP, bufsize, bodysizeP, isEOFP) {
+        http_readbody: function (
+            id: number,
+            bodyP: number,
+            bufsize: number,
+            bodysizeP: number,
+            isEOFP: number
+        ) {
             var buffer = new DataView(wasi.inst.exports.memory.buffer);
             var buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
 

@@ -1,6 +1,6 @@
-import '@xterm/xterm/css/xterm.css';
+import 'xterm/css/xterm.css';
 import './style.css'
-import { Terminal } from '@xterm/xterm';
+import { Terminal } from 'xterm';
 import { openpty } from 'xterm-pty';
 import { Termios } from 'xterm-pty/termios';
 import { delegate } from './ws-delegate';

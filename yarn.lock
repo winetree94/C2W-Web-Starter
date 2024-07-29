@@ -5,14 +5,23 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
+"@bjorn3/browser_wasi_shim@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@bjorn3/browser_wasi_shim@npm:0.3.0"
+  checksum: 10c0/9627bdcac969176a3cdd9056425bb0be9f79e3bab3458933879bafa9e49e7c80b6417ed3e883cf1787286a0554fca28ccd9983c969e31a38de15aa0435310581
+  languageName: node
+  linkType: hard
+
 "@coder/app@workspace:packages/coder":
   version: 0.0.0-use.local
   resolution: "@coder/app@workspace:packages/coder"
   dependencies:
-    "@xterm/xterm": "npm:^5.5.0"
+    "@bjorn3/browser_wasi_shim": "npm:^0.3.0"
     typescript: "npm:^5.2.2"
     vite: "npm:^5.3.4"
     vite-tsconfig-paths: "npm:^4.3.2"
+    xterm: "npm:^5.3.0"
+    xterm-pty: "npm:^0.10.2"
   languageName: unknown
   linkType: soft
 
@@ -436,13 +445,6 @@ __metadata:
   dependencies:
     undici-types: "npm:~6.11.1"
   checksum: 10c0/af26a8ec7266c857b0ced75dc3a93c6b65280d1fa40d1b4488c814d30831c5c752489c99ecb5698daec1376145b1a9ddd08350882dc2e07769917a5f22a460bc
-  languageName: node
-  linkType: hard
-
-"@xterm/xterm@npm:^5.5.0":
-  version: 5.5.0
-  resolution: "@xterm/xterm@npm:5.5.0"
-  checksum: 10c0/358801feece58617d777b2783bec68dac1f52f736da3b0317f71a34f4e25431fb0b1920244f678b8d673f797145b4858c2a5ccb463a4a6df7c10c9093f1c9267
   languageName: node
   linkType: hard
 
@@ -2059,6 +2061,29 @@ __metadata:
     string-width: "npm:^5.0.1"
     strip-ansi: "npm:^7.0.1"
   checksum: 10c0/138ff58a41d2f877eae87e3282c0630fc2789012fc1af4d6bd626eeb9a2f9a65ca92005e6e69a75c7b85a68479fe7443c7dbe1eb8fbaa681a4491364b7c55c60
+  languageName: node
+  linkType: hard
+
+"xterm-pty@npm:^0.10.2":
+  version: 0.10.2
+  resolution: "xterm-pty@npm:0.10.2"
+  dependencies:
+    xterm: "npm:^4.16.0"
+  checksum: 10c0/72ce39a9f5373c5ac3b968448de1a10b6cd7e6ff3e20f3dfd5ed56c655cee35e95e7badb53d5b2834c24639fe09ecd5f84ea3ab154164a12fd05d1f4f8ab2313
+  languageName: node
+  linkType: hard
+
+"xterm@npm:^4.16.0":
+  version: 4.19.0
+  resolution: "xterm@npm:4.19.0"
+  checksum: 10c0/539f422321f3b3cc4ea5d228f576f79cfc70968a261605c9c9c2decddb6b15043530f9500bafc860d5734ad0e0d93c59af259d4883f3381506611f6523747b5b
+  languageName: node
+  linkType: hard
+
+"xterm@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "xterm@npm:5.3.0"
+  checksum: 10c0/39bf5ea933cc2f65d5970560d065b4db645ed03c820bcf6c6239bd504e41a876ab1a773ad9e4e09476ba85a4891534702b9fbb885b0838d79e6620ed2f856bae
   languageName: node
   linkType: hard
 

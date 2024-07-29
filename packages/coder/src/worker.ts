@@ -1,10 +1,4 @@
-// importScripts("https://cdn.jsdelivr.net/npm/xterm-pty@0.9.4/workerTools.js");
-// importScripts(location.origin + "/browser_wasi_shim/index.js");
-// importScripts(location.origin + "/browser_wasi_shim/wasi_defs.js");
-// importScripts("/worker-util.js");
-// importScripts("/wasi-util.js");
-
-import { WASI } from "@bjorn3/browser_wasi_shim";
+import { Fd, WASI } from "@bjorn3/browser_wasi_shim";
 import { errStatus, getCertDir, getImagename, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
 import { TtyClient } from 'xterm-pty/client-server/ttyClient';
 import { Ciovec, Iovec } from "@bjorn3/browser_wasi_shim/wasi_defs";
@@ -15,9 +9,9 @@ onmessage = (msg) => {
         return;
     }
     var ttyClient = new TtyClient(msg.data);
-    var args = [];
-    var env = [];
-    var fds = [];
+    var args: string[] = [];
+    var env: string[] = [];
+    var fds: Fd[] = [];
     var netParam = getNetParam();
     var listenfd = 3;
     fetch(getImagename(), { credentials: 'same-origin' }).then((resp) => {
@@ -29,11 +23,16 @@ onmessage = (msg) => {
                     recvCert().then((cert) => {
                         var certDir = getCertDir(cert);
                         fds = [
+                            //@ts-ignore
                             undefined, // 0: stdin
+                            //@ts-ignore
                             undefined, // 1: stdout
+                            //@ts-ignore
                             undefined, // 2: stderr
                             certDir,   // 3: certificates dir
+                            //@ts-ignore
                             undefined, // 4: socket listenfd
+                            //@ts-ignore
                             undefined, // 5: accepted socket fd (multi-connection is unsupported)
                             // 6...: used by wasi shim
                         ];
@@ -56,22 +55,36 @@ onmessage = (msg) => {
     });
 };
 
-function startWasi(wasm, ttyClient, args, env, fds, listenfd, connfd) {
+function startWasi(
+    wasm: BufferSource,
+    ttyClient: TtyClient,
+    args: string[],
+    env: string[],
+    fds: Fd[],
+    listenfd: number,
+    connfd: number
+) {
     var wasi = new WASI(args, env, fds);
     wasiHack(wasi, ttyClient, connfd);
     wasiHackSocket(wasi, listenfd, connfd);
     WebAssembly.instantiate(wasm, {
         "wasi_snapshot_preview1": wasi.wasiImport,
     }).then((inst) => {
-        wasi.start(inst.instance);
+        wasi.start(inst.instance as { // type missmatching
+            exports: { memory: WebAssembly.Memory; _start: () => unknown };
+        });
     });
 }
 
 // wasiHack patches wasi object for integrating it to xterm-pty.
-function wasiHack(wasi: WASI, ttyClient, connfd) {
+function wasiHack(
+    wasi: WASI,
+    ttyClient: TtyClient,
+    connfd: number
+) {
     // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
     const ERRNO_INVAL = 28;
-    const ERRNO_AGAIN= 6;
+    const ERRNO_AGAIN = 6;
     var _fd_read = wasi.wasiImport.fd_read;
     wasi.wasiImport.fd_read = (fd, iovs_ptr, iovs_len, nread_ptr) => {
         if (fd == 0) {
@@ -134,11 +147,15 @@ function wasiHack(wasi: WASI, ttyClient, connfd) {
         let clockSub;
         let timeout = Number.MAX_VALUE;
         for (let sub of in_) {
+            //@ts-ignore
             if (sub.u.tag.variant == "fd_read") {
+                //@ts-ignore
                 if ((sub.u.data.fd != 0) && (sub.u.data.fd != connfd)) {
-                    console.log("poll_oneoff: unknown fd " + sub.u.data.fd);
+                    //@ts-ignore
+                    console.log("poll_oneoff: unknown fd " + sub.u!.data!.fd);
                     return ERRNO_INVAL; // only fd=0 and connfd is supported as of now (FIXME)
                 }
+                //@ts-ignore
                 if (sub.u.data.fd == 0) {
                     isReadPollStdin = true;
                     pollSubStdin = sub;
@@ -146,14 +163,17 @@ function wasiHack(wasi: WASI, ttyClient, connfd) {
                     isReadPollConn = true;
                     pollSubConn = sub;
                 }
+                //@ts-ignore
             } else if (sub.u.tag.variant == "clock") {
+                //@ts-ignore
                 if (sub.u.data.timeout < timeout) {
+                    //@ts-ignore
                     timeout = sub.u.data.timeout
                     isClockPoll = true;
                     clockSub = sub;
                 }
             } else {
-                console.log("poll_oneoff: unknown variant " + sub.u.tag.variant);
+                console.log("poll_oneoff: unknown variant " + sub.u!.tag!.variant);
                 return ERRNO_INVAL; // FIXME
             }
         }
@@ -165,7 +185,7 @@ function wasiHack(wasi: WASI, ttyClient, connfd) {
             }
             if (readable && isReadPollStdin) {
                 let event = new Event();
-                event.userdata = pollSubStdin.userdata;
+                event.userdata = pollSubStdin!.userdata;
                 event.error = 0;
                 event.type = new EventType("fd_read");
                 events.push(event);
@@ -176,7 +196,7 @@ function wasiHack(wasi: WASI, ttyClient, connfd) {
                     return ERRNO_INVAL;
                 } else if (sockreadable == true) {
                     let event = new Event();
-                    event.userdata = pollSubConn.userdata;
+                    event.userdata = pollSubConn!.userdata;
                     event.error = 0;
                     event.type = new EventType("fd_read");
                     events.push(event);
@@ -184,7 +204,7 @@ function wasiHack(wasi: WASI, ttyClient, connfd) {
             }
             if (isClockPoll) {
                 let event = new Event();
-                event.userdata = clockSub.userdata;
+                event.userdata = clockSub!.userdata;
                 event.error = 0;
                 event.type = new EventType("clock");
                 events.push(event);
@@ -211,8 +231,8 @@ function getNetParam() {
     return null;
 }
 
-function genmac(){
-    return "02:XX:XX:XX:XX:XX".replace(/X/g, function() {
+function genmac() {
+    return "02:XX:XX:XX:XX:XX".replace(/X/g, function () {
         return "0123456789ABCDEF".charAt(Math.floor(Math.random() * 16))
     });
 }
