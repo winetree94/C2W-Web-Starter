@@ -2,10 +2,10 @@ import '@xterm/xterm/css/xterm.css';
 import './style.css'
 import { Terminal } from '@xterm/xterm';
 import { openpty } from 'xterm-pty';
-import { Termios } from 'xterm-pty/src/termios';
+import { Termios } from 'xterm-pty/termios';
 import { delegate } from './ws-delegate';
 import { newStack } from './stack';
-import { TtyServer } from 'xterm-pty/src/client-server/ttyServer';
+import { TtyServer } from 'xterm-pty/client-server/ttyServer';
 import { Flags } from './flags';
 
 const xterm = new Terminal();
