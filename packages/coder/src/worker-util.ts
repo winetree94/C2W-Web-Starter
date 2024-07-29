@@ -1,7 +1,8 @@
 export var streamCtrl: Int32Array;
 import { WASI } from '@bjorn3/browser_wasi_shim';
-import { Directory, File, PreopenDirectory } from '@bjorn3/browser_wasi_shim/fs_mem';
+import { File, PreopenDirectory } from '@bjorn3/browser_wasi_shim/fs_mem';
 import { Ciovec, Iovec, WHENCE_SET } from '@bjorn3/browser_wasi_shim/wasi_defs';
+
 export var streamStatus: Int32Array;
 export var streamLen: Int32Array;
 export var streamData: Uint8Array;
@@ -140,7 +141,7 @@ export function getCertDir(
     //     "proxy.crt", new File("proxy.crt", cert)
     // ])
     const map = new Map();
-    map.set("proxy.crt", new File("proxy.crt", cert));
+    map.set("proxy.crt", new File(cert));
     var certDir = new PreopenDirectory("/.wasmenv", map);
     var _path_open = certDir.path_open;
     certDir.path_open = (e, r, s, n, a, d) => {
@@ -149,7 +150,7 @@ export function getCertDir(
             var o = ret.fd_obj;
             ret.fd_obj.fd_pread = (
                 view8: Uint8Array,
-                iovs,
+                // iovs,
                 offset
             ) => {
                 var old_offset = o.file_pos;
@@ -157,7 +158,7 @@ export function getCertDir(
                 if (r.ret != 0) {
                     return { ret: -1, nread: 0 };
                 }
-                var read_ret = o.fd_read(view8, iovs);
+                var read_ret = o.fd_read(view8);
                 r = o.fd_seek(old_offset, WHENCE_SET);
                 if (r.ret != 0) {
                     return { ret: -1, nread: 0 };
