@@ -7,6 +7,7 @@
   "scripts": {
     "app:dev": "yarn workspace @coder/app dev",
     "app:build": "yarn workspace @coder/app build",
+    "xterm-pty:build": "yarn workspace xterm-pty build",
     "binary:install": "yarn workspace @coder/container binary:install",
     "wasm:build": "yarn workspace @coder/container wasm:build && yarn workspace @coder/container wasm:copy"
   }
