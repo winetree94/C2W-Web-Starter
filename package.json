@@ -1,0 +1,12 @@
+{
+  "name": "@coder/base",
+  "packageManager": "yarn@4.3.1",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "yarn workspace @coder/app dev",
+    "binary:install": "yarn workspace @coder/container binary:install",
+    "wasm:build": "yarn workspace @coder/container wasm:build && yarn workspace @coder/container wasm:copy"
+  }
+}

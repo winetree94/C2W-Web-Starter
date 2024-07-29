@@ -1,0 +1,21 @@
+{
+  "name": "@coder/container",
+  "type": "module",
+  "scripts": {
+    "binary:install": "tsx src/download.ts",
+    "wasm:build": "tsx src/build.ts",
+    "wasm:copy": "tsx src/copy.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "node-fetch": "^3.3.2",
+    "tar": "^7.4.3"
+  }
+}
