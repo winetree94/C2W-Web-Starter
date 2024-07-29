@@ -200,7 +200,7 @@ export function connect(
                             } else {
                                 connObj.done = true;
                             }
-                        }).catch((error) => {
+                        }).catch(() => {
                             connObj.response = new TextEncoder().encode(JSON.stringify({
                                 status: 503,
                                 statusText: "Service Unavailable",

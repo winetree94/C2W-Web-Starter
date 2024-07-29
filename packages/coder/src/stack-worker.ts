@@ -46,7 +46,6 @@ onmessage = (msg) => {
 
 // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
 const ERRNO_INVAL = 28;
-const ERRNO_AGAIN = 6;
 
 function wasiHack(
     wasi: WASI,
@@ -69,7 +68,7 @@ function wasiHack(
         }
         return _fd_fdstat_get.apply(wasi.wasiImport, [fd, fdstat_ptr]);
     }
-    wasi.wasiImport.fd_fdstat_set_flags = (fd, fdflags) => {
+    wasi.wasiImport.fd_fdstat_set_flags = () => {
         // TODO
         return 0;
     }
@@ -107,8 +106,8 @@ function wasiHack(
         let isReadPollStdin = false;
         let isReadPollConn = false;
         let isClockPoll = false;
-        let pollSubStdin;
         let pollSubConn;
+        // let pollSubStdin;
         let clockSub;
         let timeout = Number.MAX_VALUE;
         for (let sub of in_) {
@@ -121,7 +120,7 @@ function wasiHack(
                 //@ts-ignore
                 if (sub.u.data.fd == 0) {
                     isReadPollStdin = true;
-                    pollSubStdin = sub;
+                    // pollSubStdin = sub;
                 } else {
                     isReadPollConn = true;
                     pollSubConn = sub;

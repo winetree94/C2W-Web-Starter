@@ -83,7 +83,6 @@ function wasiHack(
 ) {
     // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
     const ERRNO_INVAL = 28;
-    const ERRNO_AGAIN = 6;
     var _fd_read = wasi.wasiImport.fd_read;
     wasi.wasiImport.fd_read = (fd, iovs_ptr, iovs_len, nread_ptr) => {
         if (fd == 0) {

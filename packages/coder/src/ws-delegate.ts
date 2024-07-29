@@ -43,7 +43,7 @@ export function delegate(
                             accepted = false;
                             ongoing = false;
                         };
-                        wsconn.onopen = function(event) {
+                        wsconn.onopen = function() {
                             opened = true;
                             accepted = false;
                             ongoing = false;

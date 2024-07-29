@@ -186,7 +186,6 @@ export function wasiHackSocket(
     const ERRNO_INVAL = 28;
     const ERRNO_AGAIN = 6;
     var connfdUsed = false;
-    var connbuf = new Uint8Array(0);
     var _fd_close = wasi.wasiImport.fd_close;
     wasi.wasiImport.fd_close = (fd) => {
         if (fd == connfd) {
@@ -229,7 +228,7 @@ export function wasiHackSocket(
         }
         return _fd_prestat_get.apply(wasi.wasiImport, [fd, prestat_ptr]);
     }
-    wasi.wasiImport.sock_accept = (fd, flags, fd_ptr) => {
+    wasi.wasiImport.sock_accept = (fd, _, fd_ptr) => {
         if (fd != listenfd) {
             console.log("sock_accept: unknown fd " + fd);
             return ERRNO_INVAL;
@@ -246,7 +245,7 @@ export function wasiHackSocket(
         buffer.setUint32(fd_ptr, connfd, true);
         return 0;
     }
-    wasi.wasiImport.sock_send = (fd, iovs_ptr, iovs_len, si_flags/*not defined*/, nwritten_ptr) => {
+    wasi.wasiImport.sock_send = (fd, iovs_ptr, iovs_len, _/*not defined*/, nwritten_ptr) => {
         if (fd != connfd) {
             console.log("sock_send: unknown fd " + fd);
             return ERRNO_INVAL;
@@ -270,7 +269,7 @@ export function wasiHackSocket(
         buffer.setUint32(nwritten_ptr, wtotal, true);
         return 0;
     }
-    wasi.wasiImport.sock_recv = (fd, iovs_ptr, iovs_len, ri_flags, nread_ptr, ro_flags_ptr) => {
+    wasi.wasiImport.sock_recv = (fd, iovs_ptr, iovs_len, ri_flags, nread_ptr) => {
         if (ri_flags != 0) {
             console.log("ri_flags are unsupported"); // TODO
         }
@@ -306,7 +305,7 @@ export function wasiHackSocket(
         // TODO: support ro_flags_ptr
         return 0;
     }
-    wasi.wasiImport.sock_shutdown = (fd, sdflags) => {
+    wasi.wasiImport.sock_shutdown = (fd) => {
         if (fd == connfd) {
             connfdUsed = false;
         }
