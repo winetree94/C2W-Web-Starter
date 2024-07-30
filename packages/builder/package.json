@@ -1,5 +1,5 @@
 {
-  "name": "@coder/container",
+  "name": "@c2w/builder",
   "type": "module",
   "scripts": {
     "binary:install": "tsx src/download.ts",

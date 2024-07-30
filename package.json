@@ -1,14 +1,13 @@
 {
-  "name": "@coder/base",
+  "name": "@c2w/base",
   "packageManager": "yarn@4.3.1",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "app:dev": "yarn workspace @coder/app dev",
-    "app:build": "yarn workspace @coder/app build",
-    "xterm-pty:build": "yarn workspace xterm-pty build",
-    "binary:install": "yarn workspace @coder/container binary:install",
-    "wasm:build": "yarn workspace @coder/container wasm:build && yarn workspace @coder/container wasm:copy"
+    "app:dev": "yarn workspace @c2w/browser_runtime dev",
+    "app:build": "yarn workspace @c2w/browser_runtime build",
+    "binary:install": "yarn workspace @c2w/builder binary:install",
+    "wasm:build": "yarn workspace @c2w/builder wasm:build && yarn workspace @c2w/container wasm:copy"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@coder/app",
+  "name": "@c2w/browser_runtime",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -25,6 +25,6 @@
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.3.0",
     "xterm": "^5.3.0",
-    "xterm-pty": "workspace:*"
+    "xterm-pty": "https://github.com/winetree94/xterm-pty#a66577aee4470884a4797cb448d20c4f55dce3cd"
   }
 }
