@@ -1,9 +1,10 @@
-import { InitMessage } from "./types";
+import { InitMessage, NetworkMode } from "./types";
 
 export function newStack(
     worker: Worker,
     workerImageName: string,
     chunkCount: number,
+    networkMode: NetworkMode,
     stackWorker: Worker,
     stackImageName: string
 ) {
@@ -27,9 +28,10 @@ export function newStack(
         done: false
     }
     stackWorker.onmessage = connect("proxy", proxyShared, proxyConn, certbuf);
-    stackWorker.postMessage({
+    stackWorker.postMessage(<InitMessage>{
         type: "init",
         buf: proxyShared,
+        networkMode,
         imagename: stackImageName,
     });
 
@@ -38,6 +40,7 @@ export function newStack(
         type: "init",
         buf: vmShared,
         imagename: workerImageName,
+        networkMode,
         chunkCount
     });
     return connect("vm", vmShared, vmConn, certbuf);

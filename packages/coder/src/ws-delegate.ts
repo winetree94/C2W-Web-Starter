@@ -2,14 +2,21 @@ export function delegate(
     worker: Worker,
     workerImageName: string,
     chunkCount: number,
-    address: string
+    networkMode: string
 ) {
     var shared = new SharedArrayBuffer(8 + 4096);
     var streamCtrl = new Int32Array(shared, 0, 1);
     var streamStatus = new Int32Array(shared, 4, 1);
     var streamLen = new Int32Array(shared, 8, 1);
     var streamData = new Uint8Array(shared, 12);
-    worker.postMessage({type: "init", buf: shared, imagename: workerImageName, chunkCount });
+
+    worker.postMessage({
+        type: "init",
+        buf: shared,
+        imagename: workerImageName,
+        networkMode: networkMode,
+        chunkCount
+    });
 
     var opts = 'binary';
     var ongoing = false;
@@ -29,7 +36,7 @@ export function delegate(
                     streamData[0] = 0; // not opened
                     if (!ongoing) {
                         ongoing = true;
-                        wsconn = new WebSocket(address, opts);
+                        wsconn = new WebSocket(networkMode, opts);
                         wsconn.binaryType = 'arraybuffer';
                         wsconn.onmessage = function(event) {
                             const buf2 = new Uint8Array(connbuf.length + event.data.byteLength);

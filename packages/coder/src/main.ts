@@ -48,7 +48,7 @@ slave.ioctl("TCSETS", new Termios(
 xterm.loadAddon(master);
 
 const worker = new Worker(
-  new URL("./worker.ts" + location.search, import.meta.url),
+  new URL("./worker.ts", import.meta.url),
   {
     type: 'module'
   }
@@ -72,9 +72,10 @@ switch (networkMode) {
       worker,
       image.wasmName,
       image.chunkCount,
+      networkMode,
       new Worker(
         new URL(
-          "./stack-worker.ts" + location.search,
+          "./stack-worker.ts",
           import.meta.url
         ),
         {

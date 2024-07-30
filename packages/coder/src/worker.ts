@@ -1,10 +1,10 @@
 import { Fd, WASI, wasi as wasiorigin } from "@bjorn3/browser_wasi_shim";
-import { errStatus, fetchChunks, getCertDir, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
+import { errStatus, fetchChunks, getCertDir, getNetworkMode, recvCert, serveIfInitMsg, sockWaitForReadable, wasiHackSocket } from "./worker-util";
 import { TtyClient } from 'xterm-pty';
 import { Event, EventType, Subscription } from "./wasi-util";
+import { NETWORK_MODE } from "./types";
 
 onmessage = async (msg: MessageEvent) => {
-    console.log(msg);
     if (serveIfInitMsg(msg)) {
         return;
     }
@@ -12,14 +12,14 @@ onmessage = async (msg: MessageEvent) => {
     var args: string[] = [];
     var env: string[] = [];
     var fds: Fd[] = [];
-    var netParam = getNetParam();
+    var netParam = getNetworkMode();
     var listenfd = 3;
 
     const wasm = await fetchChunks();
     if (netParam) {
-        if (netParam.mode == 'delegate') {
+        if (netParam == NETWORK_MODE.DELEGATE) {
             args = ['arg0', '--net=socket', '--mac', genmac()];
-        } else if (netParam.mode == 'browser') {
+        } else if (netParam == NETWORK_MODE.BROWSER) {
             recvCert().then((cert) => {
                 var certDir = getCertDir(cert);
                 fds = [
@@ -217,20 +217,6 @@ function wasiHack(
         buffer.setUint32(nevents_ptr, len, true);
         return 0;
     }
-}
-
-function getNetParam() {
-    var vars = location.search.substring(1).split('&');
-    for (var i = 0; i < vars.length; i++) {
-        var kv = vars[i].split('=');
-        if (decodeURIComponent(kv[0]) == 'net') {
-            return {
-                mode: kv[1],
-                param: kv[2],
-            };
-        }
-    }
-    return null;
 }
 
 function genmac() {

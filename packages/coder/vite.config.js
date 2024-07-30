@@ -1,6 +1,9 @@
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default {
+  worker: {
+    format: "es"
+  },
   plugins: [
     tsconfigPaths(),
     (() => ({

@@ -1,11 +1,13 @@
 export var streamCtrl: Int32Array;
 import { WASI, File, PreopenDirectory, wasi as wasiOrigin } from '@bjorn3/browser_wasi_shim';
+import { NetworkMode } from './types';
 
 export var streamStatus: Int32Array;
 export var streamLen: Int32Array;
 export var streamData: Uint8Array;
 var imagename: string;
 var chunkCount: number;
+var networkMode: NetworkMode;
 
 export function serveIfInitMsg(
     msg: MessageEvent
@@ -20,6 +22,8 @@ export function serveIfInitMsg(
                 imagename = req_.imagename;
             if (req_.chunkCount)
                 chunkCount = req_.chunkCount;
+            if (req_.networkMode)
+                networkMode = req_.networkMode;
             return true;
         }
     }
@@ -54,6 +58,10 @@ export function registerSocketBuffer(
 
 export function getImagename() {
     return imagename;
+}
+
+export function getNetworkMode() {
+    return networkMode;
 }
 
 export const errStatus = {

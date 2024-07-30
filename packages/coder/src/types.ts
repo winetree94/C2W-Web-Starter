@@ -2,6 +2,7 @@ export interface InitMessage {
   type: "init";
   buf?: SharedArrayBuffer;
   imagename: string;
+  networkMode: NetworkMode;
   chunkCount: number;
 }
 
