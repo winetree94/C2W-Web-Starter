@@ -1,5 +1,5 @@
 export interface InitMessage {
-  type: "init";
+  type: 'init';
   buf?: SharedArrayBuffer;
   imagename: string;
   networkMode: NetworkMode;
@@ -7,9 +7,9 @@ export interface InitMessage {
 }
 
 export const NETWORK_MODE = {
-  DELEGATE: "delegate",
-  BROWSER: "browser",
-  NONE: "none",
+  DELEGATE: 'delegate',
+  BROWSER: 'browser',
+  NONE: 'none',
 } as const;
 
-export type NetworkMode = typeof NETWORK_MODE[keyof typeof NETWORK_MODE];
+export type NetworkMode = (typeof NETWORK_MODE)[keyof typeof NETWORK_MODE];
