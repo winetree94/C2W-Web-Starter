@@ -7,7 +7,7 @@ import { wasi } from '@bjorn3/browser_wasi_shim';
 //
 ////////////////////////////////////////////////////////////
 
-export class EventType {
+export class WASIEventType {
   /*:: variant: "clock" | "fd_read" | "fd_write"*/
   variant: 'clock' | 'fd_read' | 'fd_write';
 
@@ -18,11 +18,11 @@ export class EventType {
   static from_u8(data: number) /*: EventType*/ {
     switch (data) {
       case wasi.EVENTTYPE_CLOCK:
-        return new EventType('clock');
+        return new WASIEventType('clock');
       case wasi.EVENTTYPE_FD_READ:
-        return new EventType('fd_read');
+        return new WASIEventType('fd_read');
       case wasi.EVENTTYPE_FD_WRITE:
-        return new EventType('fd_write');
+        return new WASIEventType('fd_write');
       default:
         throw 'Invalid event type ' + String(data);
     }
@@ -42,14 +42,14 @@ export class EventType {
   }
 }
 
-export class Event {
+export class WASIEvent {
   /*:: userdata: UserData*/
   /*:: error: number*/
   /*:: type: EventType*/
   /*:: fd_readwrite: EventFdReadWrite | null*/
   userdata?: bigint;
   error?: number;
-  type?: EventType;
+  type?: WASIEventType;
   //   fd_readwrite: EventFdReadWrite | null;
 
   write_bytes(view: DataView, ptr: number) {
@@ -62,48 +62,52 @@ export class Event {
     // }
   }
 
-  static write_bytes_array(view: DataView, ptr: number, events: Array<Event>) {
+  static write_bytes_array(
+    view: DataView,
+    ptr: number,
+    events: Array<WASIEvent>,
+  ) {
     for (let i = 0; i < events.length; i++) {
       events[i].write_bytes(view, ptr + 32 * i);
     }
   }
 }
 
-export class SubscriptionClock {
+export class WASISubscriptionClock {
   timeout?: number;
 
-  static read_bytes(view: DataView, ptr: number): SubscriptionClock {
-    const self = new SubscriptionClock();
+  static read_bytes(view: DataView, ptr: number): WASISubscriptionClock {
+    const self = new WASISubscriptionClock();
     self.timeout = Number(view.getBigUint64(ptr + 8, true));
     return self;
   }
 }
 
-export class SubscriptionFdReadWrite {
+export class WASISubscriptionFdReadWrite {
   /*:: fd: number*/
   fd?: number;
 
-  static read_bytes(view: DataView, ptr: number): SubscriptionFdReadWrite {
-    const self = new SubscriptionFdReadWrite();
+  static read_bytes(view: DataView, ptr: number): WASISubscriptionFdReadWrite {
+    const self = new WASISubscriptionFdReadWrite();
     self.fd = view.getUint32(ptr, true);
     return self;
   }
 }
 
-export class SubscriptionU {
-  tag?: EventType;
-  data?: SubscriptionClock | SubscriptionFdReadWrite;
+export class WASISubscriptionU {
+  tag?: WASIEventType;
+  data?: WASISubscriptionClock | WASISubscriptionFdReadWrite;
 
-  static read_bytes(view: DataView, ptr: number): SubscriptionU {
-    const self = new SubscriptionU();
-    self.tag = EventType.from_u8(view.getUint8(ptr));
+  static read_bytes(view: DataView, ptr: number): WASISubscriptionU {
+    const self = new WASISubscriptionU();
+    self.tag = WASIEventType.from_u8(view.getUint8(ptr));
     switch (self.tag.variant) {
       case 'clock':
-        self.data = SubscriptionClock.read_bytes(view, ptr + 8);
+        self.data = WASISubscriptionClock.read_bytes(view, ptr + 8);
         break;
       case 'fd_read':
       case 'fd_write':
-        self.data = SubscriptionFdReadWrite.read_bytes(view, ptr + 8);
+        self.data = WASISubscriptionFdReadWrite.read_bytes(view, ptr + 8);
         break;
       default:
         throw 'unreachable';
@@ -112,14 +116,14 @@ export class SubscriptionU {
   }
 }
 
-export class Subscription {
+export class WASISubscription {
   userdata?: bigint;
-  u?: SubscriptionU;
+  u?: WASISubscriptionU;
 
-  static read_bytes(view: DataView, ptr: number): Subscription {
-    const subscription = new Subscription();
+  static read_bytes(view: DataView, ptr: number): WASISubscription {
+    const subscription = new WASISubscription();
     subscription.userdata = view.getBigUint64(ptr, true);
-    subscription.u = SubscriptionU.read_bytes(view, ptr + 8);
+    subscription.u = WASISubscriptionU.read_bytes(view, ptr + 8);
     return subscription;
   }
 
@@ -127,10 +131,10 @@ export class Subscription {
     view: DataView,
     ptr: number,
     len: number,
-  ): Array<Subscription> {
+  ): Array<WASISubscription> {
     const subscriptions = [];
     for (let i = 0; i < len; i++) {
-      subscriptions.push(Subscription.read_bytes(view, ptr + 48 * i));
+      subscriptions.push(WASISubscription.read_bytes(view, ptr + 48 * i));
     }
     return subscriptions;
   }

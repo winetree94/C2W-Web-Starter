@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Fd, WASI, wasi as wasiOrigin } from '@bjorn3/browser_wasi_shim';
+import { Fd, WASI, wasi } from '@bjorn3/browser_wasi_shim';
 import {
   appendData,
   errStatus,
@@ -13,7 +13,7 @@ import {
   streamStatus,
   wasiHackSocket,
 } from './worker-util';
-import { Event, EventType, Subscription } from './wasi-util';
+import { WASIEvent, WASIEventType, WASISubscription } from './wasi-util';
 
 onmessage = async (msg: MessageEvent) => {
   console.log('init');
@@ -42,22 +42,22 @@ onmessage = async (msg: MessageEvent) => {
     '--debug',
   ];
   const env: string[] = [];
-  const wasi = new WASI(args, env, fds);
-  wasiHack(wasi, certfd, 5);
-  wasiHackSocket(wasi, listenfd, 5);
+  const wasiInstance = new WASI(args, env, fds);
+  wasiHack(wasiInstance, certfd, 5);
+  wasiHackSocket(wasiInstance, listenfd, 5);
 
   const wasm = await fetch(getImagename(), { credentials: 'same-origin' }).then(
     (res) => res.arrayBuffer(),
   );
 
   WebAssembly.instantiate(wasm, {
-    wasi_snapshot_preview1: wasi.wasiImport,
-    env: envHack(wasi),
+    wasi_snapshot_preview1: wasiInstance.wasiImport,
+    env: envHack(wasiInstance),
   }).then((inst) => {
     /**
      * @todo type missmatching
      */
-    wasi.start(
+    wasiInstance.start(
       inst.instance as {
         exports: { memory: WebAssembly.Memory; _start: () => unknown };
       },
@@ -68,37 +68,33 @@ onmessage = async (msg: MessageEvent) => {
 // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
 const ERRNO_INVAL = 28;
 
-function wasiHack(wasi: WASI, certfd: number, connfd: number) {
+function wasiHack(wasiInstance: WASI, certfd: number, connfd: number) {
   let certbuf = new Uint8Array(0);
-  const _fd_close = wasi.wasiImport.fd_close;
-  wasi.wasiImport.fd_close = (fd) => {
+  const _fd_close = wasiInstance.wasiImport.fd_close;
+  wasiInstance.wasiImport.fd_close = (fd) => {
     if (fd == certfd) {
       sendCert(certbuf);
       return 0;
     }
-    return _fd_close.apply(wasi.wasiImport, [fd]);
+    return _fd_close.apply(wasiInstance.wasiImport, [fd]);
   };
-  const _fd_fdstat_get = wasi.wasiImport.fd_fdstat_get;
-  wasi.wasiImport.fd_fdstat_get = (fd, fdstat_ptr) => {
+  const _fd_fdstat_get = wasiInstance.wasiImport.fd_fdstat_get;
+  wasiInstance.wasiImport.fd_fdstat_get = (fd, fdstat_ptr) => {
     if (fd == certfd) {
       return 0;
     }
-    return _fd_fdstat_get.apply(wasi.wasiImport, [fd, fdstat_ptr]);
+    return _fd_fdstat_get.apply(wasiInstance.wasiImport, [fd, fdstat_ptr]);
   };
-  wasi.wasiImport.fd_fdstat_set_flags = () => {
+  wasiInstance.wasiImport.fd_fdstat_set_flags = () => {
     // TODO
     return 0;
   };
-  const _fd_write = wasi.wasiImport.fd_write;
-  wasi.wasiImport.fd_write = (fd, iovs_ptr, iovs_len, nwritten_ptr) => {
+  const _fd_write = wasiInstance.wasiImport.fd_write;
+  wasiInstance.wasiImport.fd_write = (fd, iovs_ptr, iovs_len, nwritten_ptr) => {
     if (fd == 1 || fd == 2 || fd == certfd) {
-      const buffer = new DataView(wasi.inst.exports.memory.buffer);
-      const buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
-      const iovecs = wasiOrigin.Ciovec.read_bytes_array(
-        buffer,
-        iovs_ptr,
-        iovs_len,
-      );
+      const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
+      const buffer8 = new Uint8Array(wasiInstance.inst.exports.memory.buffer);
+      const iovecs = wasi.Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
       let wtotal = 0;
       for (let i = 0; i < iovecs.length; i++) {
         const iovec = iovecs[i];
@@ -116,14 +112,14 @@ function wasiHack(wasi: WASI, certfd: number, connfd: number) {
       return 0;
     }
     console.log('fd_write: unknown fd ' + fd);
-    return _fd_write.apply(wasi.wasiImport, [
+    return _fd_write.apply(wasiInstance.wasiImport, [
       fd,
       iovs_ptr,
       iovs_len,
       nwritten_ptr,
     ]);
   };
-  wasi.wasiImport.poll_oneoff = (
+  wasiInstance.wasiImport.poll_oneoff = (
     in_ptr,
     out_ptr,
     nsubscriptions,
@@ -132,8 +128,12 @@ function wasiHack(wasi: WASI, certfd: number, connfd: number) {
     if (nsubscriptions == 0) {
       return ERRNO_INVAL;
     }
-    const buffer = new DataView(wasi.inst.exports.memory.buffer);
-    const in_ = Subscription.read_bytes_array(buffer, in_ptr, nsubscriptions);
+    const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
+    const in_ = WASISubscription.read_bytes_array(
+      buffer,
+      in_ptr,
+      nsubscriptions,
+    );
     let isReadPollStdin = false;
     let isReadPollConn = false;
     let isClockPoll = false;
@@ -176,29 +176,29 @@ function wasiHack(wasi: WASI, certfd: number, connfd: number) {
         if (sockreadable == errStatus) {
           return ERRNO_INVAL;
         } else if (sockreadable == true) {
-          const event = new Event();
+          const event = new WASIEvent();
           event.userdata = pollSubConn?.userdata;
           event.error = 0;
-          event.type = new EventType('fd_read');
+          event.type = new WASIEventType('fd_read');
           events.push(event);
         }
       }
       if (isClockPoll) {
-        const event = new Event();
+        const event = new WASIEvent();
         event.userdata = clockSub?.userdata;
         event.error = 0;
-        event.type = new EventType('clock');
+        event.type = new WASIEventType('clock');
         events.push(event);
       }
     }
     const len = events.length;
-    Event.write_bytes_array(buffer, out_ptr, events);
+    WASIEvent.write_bytes_array(buffer, out_ptr, events);
     buffer.setUint32(nevents_ptr, len, true);
     return 0;
   };
 }
 
-function envHack(wasi: WASI) {
+function envHack(wasiInstance: WASI) {
   return {
     http_send: function (
       addressP: number,
@@ -207,13 +207,17 @@ function envHack(wasi: WASI) {
       reqlen: number,
       idP: number,
     ) {
-      const buffer = new DataView(wasi.inst.exports.memory.buffer);
+      const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
       const address = new Uint8Array(
-        wasi.inst.exports.memory.buffer,
+        wasiInstance.inst.exports.memory.buffer,
         addressP,
         addresslen,
       );
-      const req = new Uint8Array(wasi.inst.exports.memory.buffer, reqP, reqlen);
+      const req = new Uint8Array(
+        wasiInstance.inst.exports.memory.buffer,
+        reqP,
+        reqlen,
+      );
       streamCtrl[0] = 0;
       postMessage({
         type: 'http_send',
@@ -235,9 +239,9 @@ function envHack(wasi: WASI) {
       nwrittenP: number,
       isEOF: number,
     ) {
-      const buffer = new DataView(wasi.inst.exports.memory.buffer);
+      const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
       const body = new Uint8Array(
-        wasi.inst.exports.memory.buffer,
+        wasiInstance.inst.exports.memory.buffer,
         bodyP,
         bodylen,
       );
@@ -256,7 +260,7 @@ function envHack(wasi: WASI) {
       return 0;
     },
     http_isreadable: function (id: number, isOKP: number) {
-      const buffer = new DataView(wasi.inst.exports.memory.buffer);
+      const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
       streamCtrl[0] = 0;
       postMessage({ type: 'http_isreadable', id: id });
       Atomics.wait(streamCtrl, 0, 0);
@@ -277,8 +281,8 @@ function envHack(wasi: WASI) {
       respsizeP: number,
       isEOFP: number,
     ) {
-      const buffer = new DataView(wasi.inst.exports.memory.buffer);
-      const buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
+      const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
+      const buffer8 = new Uint8Array(wasiInstance.inst.exports.memory.buffer);
 
       streamCtrl[0] = 0;
       postMessage({ type: 'http_recv', id: id, len: bufsize });
@@ -304,8 +308,8 @@ function envHack(wasi: WASI) {
       bodysizeP: number,
       isEOFP: number,
     ) {
-      const buffer = new DataView(wasi.inst.exports.memory.buffer);
-      const buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
+      const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
+      const buffer8 = new Uint8Array(wasiInstance.inst.exports.memory.buffer);
 
       streamCtrl[0] = 0;
       postMessage({ type: 'http_readbody', id: id, len: bufsize });

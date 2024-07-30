@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Fd, WASI, wasi as wasiorigin } from '@bjorn3/browser_wasi_shim';
+import { Fd, WASI, wasi } from '@bjorn3/browser_wasi_shim';
 import {
   errStatus,
   fetchChunks,
@@ -11,8 +11,8 @@ import {
   wasiHackSocket,
 } from './worker-util';
 import { TtyClient } from 'xterm-pty';
-import { Event, EventType, Subscription } from './wasi-util';
-import { NETWORK_MODE } from './types';
+import { WASIEvent, WASIEventType, WASISubscription } from './wasi-util';
+import { NETWORK_MODE } from '../types';
 
 onmessage = async (msg: MessageEvent) => {
   if (serveIfInitMsg(msg)) {
@@ -77,13 +77,13 @@ function startWasi(
   listenfd: number,
   connfd: number,
 ) {
-  const wasi = new WASI(args, env, fds);
-  wasiHack(wasi, ttyClient, connfd);
-  wasiHackSocket(wasi, listenfd, connfd);
+  const wasiInstance = new WASI(args, env, fds);
+  wasiHack(wasiInstance, ttyClient, connfd);
+  wasiHackSocket(wasiInstance, listenfd, connfd);
   WebAssembly.instantiate(wasm, {
-    wasi_snapshot_preview1: wasi.wasiImport,
+    wasi_snapshot_preview1: wasiInstance.wasiImport,
   }).then((inst) => {
-    wasi.start(
+    wasiInstance.start(
       inst.instance as {
         // type missmatching
         exports: { memory: WebAssembly.Memory; _start: () => unknown };
@@ -93,19 +93,15 @@ function startWasi(
 }
 
 // wasiHack patches wasi object for integrating it to xterm-pty.
-function wasiHack(wasi: WASI, ttyClient: TtyClient, connfd: number) {
+function wasiHack(wasiInstance: WASI, ttyClient: TtyClient, connfd: number) {
   // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
   const ERRNO_INVAL = 28;
-  const _fd_read = wasi.wasiImport.fd_read;
-  wasi.wasiImport.fd_read = (fd, iovs_ptr, iovs_len, nread_ptr) => {
+  const _fd_read = wasiInstance.wasiImport.fd_read;
+  wasiInstance.wasiImport.fd_read = (fd, iovs_ptr, iovs_len, nread_ptr) => {
     if (fd == 0) {
-      const buffer = new DataView(wasi.inst.exports.memory.buffer);
-      const buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
-      const iovecs = wasiorigin.Iovec.read_bytes_array(
-        buffer,
-        iovs_ptr,
-        iovs_len,
-      );
+      const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
+      const buffer8 = new Uint8Array(wasiInstance.inst.exports.memory.buffer);
+      const iovecs = wasi.Iovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
       let nread = 0;
       for (let i = 0; i < iovecs.length; i++) {
         const iovec = iovecs[i];
@@ -120,7 +116,7 @@ function wasiHack(wasi: WASI, ttyClient: TtyClient, connfd: number) {
       return 0;
     } else {
       console.log('fd_read: unknown fd ' + fd);
-      return _fd_read.apply(wasi.wasiImport, [
+      return _fd_read.apply(wasiInstance.wasiImport, [
         fd,
         iovs_ptr,
         iovs_len,
@@ -129,16 +125,12 @@ function wasiHack(wasi: WASI, ttyClient: TtyClient, connfd: number) {
     }
     return ERRNO_INVAL;
   };
-  const _fd_write = wasi.wasiImport.fd_write;
-  wasi.wasiImport.fd_write = (fd, iovs_ptr, iovs_len, nwritten_ptr) => {
+  const _fd_write = wasiInstance.wasiImport.fd_write;
+  wasiInstance.wasiImport.fd_write = (fd, iovs_ptr, iovs_len, nwritten_ptr) => {
     if (fd == 1 || fd == 2) {
-      const buffer = new DataView(wasi.inst.exports.memory.buffer);
-      const buffer8 = new Uint8Array(wasi.inst.exports.memory.buffer);
-      const iovecs = wasiorigin.Ciovec.read_bytes_array(
-        buffer,
-        iovs_ptr,
-        iovs_len,
-      );
+      const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
+      const buffer8 = new Uint8Array(wasiInstance.inst.exports.memory.buffer);
+      const iovecs = wasi.Ciovec.read_bytes_array(buffer, iovs_ptr, iovs_len);
       let wtotal = 0;
       for (let i = 0; i < iovecs.length; i++) {
         const iovec = iovecs[i];
@@ -153,7 +145,7 @@ function wasiHack(wasi: WASI, ttyClient: TtyClient, connfd: number) {
       return 0;
     } else {
       console.log('fd_write: unknown fd ' + fd);
-      return _fd_write.apply(wasi.wasiImport, [
+      return _fd_write.apply(wasiInstance.wasiImport, [
         fd,
         iovs_ptr,
         iovs_len,
@@ -162,7 +154,7 @@ function wasiHack(wasi: WASI, ttyClient: TtyClient, connfd: number) {
     }
     return ERRNO_INVAL;
   };
-  wasi.wasiImport.poll_oneoff = (
+  wasiInstance.wasiImport.poll_oneoff = (
     in_ptr,
     out_ptr,
     nsubscriptions,
@@ -171,8 +163,12 @@ function wasiHack(wasi: WASI, ttyClient: TtyClient, connfd: number) {
     if (nsubscriptions == 0) {
       return ERRNO_INVAL;
     }
-    const buffer = new DataView(wasi.inst.exports.memory.buffer);
-    const in_ = Subscription.read_bytes_array(buffer, in_ptr, nsubscriptions);
+    const buffer = new DataView(wasiInstance.inst.exports.memory.buffer);
+    const in_ = WASISubscription.read_bytes_array(
+      buffer,
+      in_ptr,
+      nsubscriptions,
+    );
     let isReadPollStdin = false;
     let isReadPollConn = false;
     let isClockPoll = false;
@@ -218,10 +214,10 @@ function wasiHack(wasi: WASI, ttyClient: TtyClient, connfd: number) {
         readable = ttyClient.onWaitForReadable(timeout / 1000000000);
       }
       if (readable && isReadPollStdin) {
-        const event = new Event();
+        const event = new WASIEvent();
         event.userdata = pollSubStdin!.userdata;
         event.error = 0;
-        event.type = new EventType('fd_read');
+        event.type = new WASIEventType('fd_read');
         events.push(event);
       }
       if (isReadPollConn) {
@@ -229,23 +225,23 @@ function wasiHack(wasi: WASI, ttyClient: TtyClient, connfd: number) {
         if (sockreadable == errStatus) {
           return ERRNO_INVAL;
         } else if (sockreadable == true) {
-          const event = new Event();
+          const event = new WASIEvent();
           event.userdata = pollSubConn!.userdata;
           event.error = 0;
-          event.type = new EventType('fd_read');
+          event.type = new WASIEventType('fd_read');
           events.push(event);
         }
       }
       if (isClockPoll) {
-        const event = new Event();
+        const event = new WASIEvent();
         event.userdata = clockSub!.userdata;
         event.error = 0;
-        event.type = new EventType('clock');
+        event.type = new WASIEventType('clock');
         events.push(event);
       }
     }
     const len = events.length;
-    Event.write_bytes_array(buffer, out_ptr, events);
+    WASIEvent.write_bytes_array(buffer, out_ptr, events);
     buffer.setUint32(nevents_ptr, len, true);
     return 0;
   };

@@ -5,7 +5,7 @@ import {
   PreopenDirectory,
   wasi as wasiOrigin,
 } from '@bjorn3/browser_wasi_shim';
-import { NetworkMode } from './types';
+import { NetworkMode } from '../types';
 
 export let streamCtrl: Int32Array;
 export let streamStatus: Int32Array;

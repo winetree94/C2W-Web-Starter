@@ -45,7 +45,7 @@ slave.ioctl(
 
 xterm.loadAddon(master);
 
-const worker = new Worker(new URL('./worker.ts', import.meta.url), {
+const worker = new Worker(new URL('./workers/worker.ts', import.meta.url), {
   type: 'module',
 });
 
@@ -63,7 +63,7 @@ switch (networkMode) {
       image.wasmName,
       image.chunkCount,
       networkMode,
-      new Worker(new URL('./stack-worker.ts', import.meta.url), {
+      new Worker(new URL('./workers/stack-worker.ts', import.meta.url), {
         type: 'module',
       }),
       location.origin + '/wasms/c2w-net-proxy.wasm',
