@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 import { InitMessage, NetworkMode } from './types';
 
 export function newStack(
@@ -63,6 +64,7 @@ export function connect(
   const sendbuf = conn.sendbuf;
   const recvbuf = conn.recvbuf;
   let accepted = false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const httpConnections: any = {};
   let curID = 0;
   const maxID = 0x7fffffff; // storable in streamStatus(signed 32bits)
@@ -93,6 +95,7 @@ export function connect(
     streamData.set(buf, 0);
     return remain;
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let timeoutHandler: any;
   return function (msg: MessageEvent) {
     const req_ = msg.data;
@@ -184,7 +187,8 @@ export function connect(
 
           if (req_.isEOF && !httpConnections[req_.id].requestSent) {
             httpConnections[req_.id].requestSent = true;
-            const connObj: any = httpConnections[req_.id] as any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const connObj: any = httpConnections[req_.id];
             if (
               connObj.request.method != 'HEAD' &&
               connObj.request.method != 'GET'

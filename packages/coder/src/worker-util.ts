@@ -1,4 +1,4 @@
-export var streamCtrl: Int32Array;
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   WASI,
   File,
@@ -7,9 +7,11 @@ import {
 } from '@bjorn3/browser_wasi_shim';
 import { NetworkMode } from './types';
 
-export var streamStatus: Int32Array;
-export var streamLen: Int32Array;
-export var streamData: Uint8Array;
+export let streamCtrl: Int32Array;
+export let streamStatus: Int32Array;
+export let streamLen: Int32Array;
+export let streamData: Uint8Array;
+
 let imagename: string;
 let chunkCount: number;
 let networkMode: NetworkMode;
@@ -18,7 +20,8 @@ export function serveIfInitMsg(msg: MessageEvent) {
   const req_ = msg.data;
   if (typeof req_ == 'object') {
     if (req_.type == 'init') {
-      if (req_.buf) var shared = req_.buf;
+      let shared;
+      if (req_.buf) shared = req_.buf;
       registerSocketBuffer(shared);
       if (req_.imagename) imagename = req_.imagename;
       if (req_.chunkCount) chunkCount = req_.chunkCount;
@@ -319,7 +322,7 @@ export function wasiHackSocket(wasi: WASI, listenfd: number, connfd: number) {
       if (iovec.buf_len == 0) {
         continue;
       }
-      var data;
+      let data;
       try {
         data = sockRecv(iovec.buf_len);
       } catch (e) {

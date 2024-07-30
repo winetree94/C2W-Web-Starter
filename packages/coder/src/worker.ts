@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Fd, WASI, wasi as wasiorigin } from '@bjorn3/browser_wasi_shim';
 import {
   errStatus,

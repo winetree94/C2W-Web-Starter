@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Fd, WASI, wasi as wasiOrigin } from '@bjorn3/browser_wasi_shim';
 import {
   appendData,

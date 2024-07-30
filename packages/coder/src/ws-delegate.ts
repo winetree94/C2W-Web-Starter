@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 export function delegate(
   worker: Worker,
   workerImageName: string,
@@ -66,8 +67,8 @@ export function delegate(
                 accepted = false;
                 ongoing = false;
               };
-              wsconn.onerror = function (error: any) {
-                console.log('websocket error: ' + error.data);
+              wsconn.onerror = function (error) {
+                console.log('websocket error: ' + error);
                 opened = false;
                 accepted = false;
                 ongoing = false;
@@ -91,11 +92,11 @@ export function delegate(
             streamStatus[0] = -1;
             break;
           }
-          var length = req_.len;
+          let length = req_.len as number;
           if (length > streamData.length) length = streamData.length;
           if (length > connbuf.length) length = connbuf.length;
-          var buf = connbuf.slice(0, length);
-          var remain = connbuf.slice(length, connbuf.length);
+          const buf = connbuf.slice(0, length);
+          const remain = connbuf.slice(length, connbuf.length);
           connbuf = remain;
           streamLen[0] = buf.length;
           streamData.set(buf, 0);
