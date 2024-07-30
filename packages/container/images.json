@@ -9,5 +9,10 @@
     "name": "node",
     "containerName": "node:22-alpine3.19",
     "wasmName": "node.wasm"
+  },
+  {
+    "name": "alpine",
+    "containerName": "alpine:3.20.2",
+    "wasmName": "alpine.wasm"
   }
 ]

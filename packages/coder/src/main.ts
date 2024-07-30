@@ -56,7 +56,7 @@ const worker = new Worker(
 
 var nwStack: (e: MessageEvent) => void;
 var networkMode = getNetParam();
-var image = chunks.ubuntu;
+var image = chunks.alpine;
 
 switch (networkMode) {
   case NETWORK_MODE.DELEGATE:
