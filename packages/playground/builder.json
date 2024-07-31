@@ -1,0 +1,33 @@
+{
+  "c2wVersion": "0.6.4",
+  "wasmOutput": "./public/wasms",
+  "resultJsonOutput": "./src/components/chunks.json",
+  "wasmMaxChunkSize": 20,
+  "images": [
+    {
+      "type": "dockerfile",
+      "name": "ubuntu",
+      "dockerfilePath": "./dockerfiles/Jammy.Dockerfile"
+    },
+    {
+      "type": "image",
+      "name": "node",
+      "imageName": "node:22-alpine3.19"
+    },
+    {
+      "type": "image",
+      "name": "alpine",
+      "imageName": "alpine:3.20.2"
+    },
+    {
+      "type": "image",
+      "name": "python",
+      "imageName": "python:3.12.4-alpine3.20"
+    },
+    {
+      "type": "dockerfile",
+      "name": "vim",
+      "dockerfilePath": "./dockerfiles/Vim.Dockerfile"
+    }
+  ]
+}

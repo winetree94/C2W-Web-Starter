@@ -26,4 +26,6 @@ public/wasms/*
 
 tmp/*
 bin/*
+c2w/*
 dist/*
+out/*

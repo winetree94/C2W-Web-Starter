@@ -12,19 +12,10 @@
       "ubuntu.wasm.part7",
       "ubuntu.wasm.part8",
       "ubuntu.wasm.part9",
-      "ubuntu.wasm.part10",
-      "ubuntu.wasm.part11",
-      "ubuntu.wasm.part12",
-      "ubuntu.wasm.part13",
-      "ubuntu.wasm.part14",
-      "ubuntu.wasm.part15",
-      "ubuntu.wasm.part16",
-      "ubuntu.wasm.part17",
-      "ubuntu.wasm.part18",
-      "ubuntu.wasm.part19"
+      "ubuntu.wasm.part10"
     ],
-    "image": "FROM ubuntu:22.04\n\nRUN \\\n  apt-get update && apt-get upgrade -y\n\nRUN \\\n  apt-get install curl neofetch -y\n\nENTRYPOINT [\"/bin/bash\"]\n",
-    "size": 402188454
+    "image": "FROM ubuntu:22.04\n\nRUN apt-get update\n\nRUN apt-get install curl -y\n\nENTRYPOINT [\"/bin/bash\"]\n",
+    "size": 228094036
   },
   "node": {
     "name": "node",
