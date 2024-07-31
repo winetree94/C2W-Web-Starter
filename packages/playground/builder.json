@@ -11,13 +11,13 @@
     },
     {
       "type": "image",
-      "name": "node",
-      "imageName": "node:22-alpine3.19"
+      "name": "alpine",
+      "imageName": "alpine:3.20.2"
     },
     {
       "type": "image",
-      "name": "alpine",
-      "imageName": "alpine:3.20.2"
+      "name": "node",
+      "imageName": "node:22-slim"
     },
     {
       "type": "image",

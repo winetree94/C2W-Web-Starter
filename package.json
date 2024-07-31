@@ -12,7 +12,8 @@
     "builder:dev": "yarn workspace @c2w/builder watch",
     "builder:build": "yarn workspace @c2w/builder build",
     "playground:dev": "yarn workspace @c2w/playground dev",
-    "playground:build": "yarn workspace @c2w/playground build"
+    "playground:build": "yarn workspace @c2w/playground build",
+    "playground:build:images": "yarn workspace @c2w/playground build:images"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

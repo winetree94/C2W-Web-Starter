@@ -12,13 +12,11 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.8.3",
-    "@astrojs/tailwind": "^5.1.0",
     "@bjorn3/browser_wasi_shim": "^0.3.0",
     "@c2w/browser_runtime": "workspace:^",
     "@c2w/builder": "workspace:^",
     "@picocss/pico": "^2.0.6",
     "astro": "^4.10.2",
-    "tailwindcss": "^3.4.7",
     "typescript": "^5.5.4",
     "xterm": "^5.3.0",
     "xterm-pty": "https://github.com/winetree94/xterm-pty#a66577aee4470884a4797cb448d20c4f55dce3cd"

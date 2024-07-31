@@ -13,9 +13,4 @@ export default defineConfig({
 			'Cross-Origin-Embedder-Policy': 'require-corp'
 		},
 	},
-	integrations: [
-		tailwind({
-			applyBaseStyles: false,
-		}),
-	],
 });

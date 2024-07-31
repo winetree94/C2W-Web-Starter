@@ -5,34 +5,41 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-  <C2WTerminal imageName={'alpine'} />
-  <h1 class="mt-8">x86_64 containers demo</h1>
-  <table class="mt-8">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Image</th>
-        <th>Size</th>
-        <th>Demo</th>
-      </tr>
-    </thead>
-    <tbody>
-      {
-        Object.values(chunks).map((image) => (
-          <tr>
-            <td>{image.name}</td>
-            <td>
-              <Fragment set:html={image.image.replaceAll("\n", "<br>")} />
-            </td>
-            <td>{Math.ceil(image.size / 1024 / 1024)}MB</td>
-            <td>
-              <a href={`/playground/${image.name}/`}>No network</a>
-              <a href={`/playground/${image.name}/?net=delegate`}>delegate</a>
-              <a href={`/playground/${image.name}/?net=browser`}>browser</a>
-            </td>
-          </tr>
-        ))
-      }
-    </tbody>
-  </table>
+  <section>
+    <C2WTerminal imageName={"alpine"} />
+  </section>
+  <hr>
+  <section>
+    <h1>x86_64 containers demo</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Image</th>
+          <th>Size</th>
+          <th>Demo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          Object.values(chunks).map((image) => (
+            <tr>
+              <td>{image.name}</td>
+              <td>
+                <Fragment set:html={image.image.replaceAll("\n", "<br>")} />
+              </td>
+              <td>{Math.ceil(image.size / 1024 / 1024)}MB</td>
+              <td>
+                <a href={`/playground/${image.name}/`}>No network</a>
+                <a href={`/playground/${image.name}/?net=delegate`}>delegate</a>
+                <a href={`/playground/${image.name}/?net=browser`}>browser</a>
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </section>
+  <p>NOTE: They are compiled as WASI images and run on browser via polyfill.</p>
+  <p>More info including docs and source code is available from <a href="https://github.com/ktock/container2wasm">container2wasm</a> repo. This page is served from <a href="https://github.com/ktock/container2wasm-demo">container2wasm-demo repo</a> as GitHub Pages.</p>
 </Layout>

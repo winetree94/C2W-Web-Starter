@@ -6,8 +6,13 @@ interface Props {
 const props = Astro.props as Props;
 ---
 
-<div id="terminal" class="terminal h-[408px]" data-image-name={props.imageName}>
+<div id="terminal" class="terminal" data-image-name={props.imageName}>
 </div>
+<style>
+  #terminal {
+    height: 408px;
+  }
+</style>
 <script>
   import { c2wTerminal } from "@c2w/browser_runtime";
   import chunks from './chunks.json';

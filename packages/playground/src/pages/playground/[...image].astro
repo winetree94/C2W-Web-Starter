@@ -18,10 +18,14 @@ const props = Astro.props;
 ---
 
 <Layout>
-  <C2WTerminal imageName={props.name} />
-
-  <h1 class="mt-8">Source Container Image</h1>
-  <p class="border border-gray-200 p-4 rounded-lg">
-    <Fragment set:html={props.image.replaceAll("\n", "<br>").trim()} />
-  </p>
+  <section>
+    <C2WTerminal imageName={props.name} />
+  </section>
+  <hr>
+  <section>
+    <h2>Source Container Image</h2>
+    <article>
+      <Fragment set:html={props.image.replaceAll("\n", "<br>").trim()} />
+    </article>
+  </section>
 </Layout>

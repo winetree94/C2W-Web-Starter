@@ -17,11 +17,14 @@ import "../styles/global.css";
     <title>C2W Playground</title>
   </head>
   <body>
-		<main class="m-8">
-			<header class="mb-8">
-				<h1>Container2Wasm Playground</h1>
-			</header>
-    	<slot />
-		</main>
+    <header class="container">
+      <hgroup>
+        <h1>Container2Wasm Playground</h1>
+        <p>Examples of running Linux-based containers on browser using <a href="https://github.com/ktock/container2wasm">container2wasm</a>.</p>
+      </hgroup>
+    </header>
+    <main class="container">
+      <slot />
+    </main>
   </body>
 </html>
