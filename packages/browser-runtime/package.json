@@ -3,11 +3,29 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "build/index.cjs",
+  "types": "build/index.d.ts",
+  "module": "build/index.js",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.js",
+      "require": "./build/index.cjs"
+    },
+    "./workers/worker.js": {
+      "types": "./build/workers/worker.d.ts",
+      "import": "./build/workers/worker.js",
+      "require": "./build/workers/worker.cjs"
+    },
+    "./workers/stack-worker.js": {
+      "types": "./build/workers/stack-worker.d.ts",
+      "import": "./build/workers/stack-worker.js",
+      "require": "./build/workers/stack-worker.cjs"
+    }
+  },
   "scripts": {
-    "dev": "vite",
-    "tsc": "tsc",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "watch": "tsup --watch",
+    "build": "tsup"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
@@ -15,12 +33,10 @@
     "eslint": "9.x",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
-    "globals": "^15.8.0",
     "prettier": "^3.3.3",
+    "tsup": "^8.2.3",
     "typescript": "^5.2.2",
-    "typescript-eslint": "^7.18.0",
-    "vite": "^5.3.4",
-    "vite-tsconfig-paths": "^4.3.2"
+    "typescript-eslint": "^7.18.0"
   },
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.3.0",

@@ -1,0 +1,18 @@
+{
+  "ubuntu": {
+    "wasmName": "ubuntu",
+    "chunkCount": 11
+  },
+  "node": {
+    "wasmName": "node",
+    "chunkCount": 12
+  },
+  "alpine": {
+    "wasmName": "alpine",
+    "chunkCount": 5
+  },
+  "python": {
+    "wasmName": "python",
+    "chunkCount": 8
+  }
+}

@@ -5,11 +5,11 @@ const runner = async () => {
   await resetDirectory("../coder/public/wasms");
   await copyDirectoryContents(
     "dist",
-    "../coder/public/wasms"
+    "../playground/public/wasms"
   );
   copyFileSync(
     './dist/chunks.json',
-    '../coder/src/chunks.json'
+    '../playground/src/components/chunks.json'
   );
 }
 

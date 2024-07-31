@@ -3,7 +3,7 @@ import { Fd, WASI, wasi } from '@bjorn3/browser_wasi_shim';
 import {
   appendData,
   errStatus,
-  getImagename,
+  fetchChunks2,
   sendCert,
   serveIfInitMsg,
   sockWaitForReadable,
@@ -15,7 +15,7 @@ import {
 } from './worker-util';
 import { WASIEvent, WASIEventType, WASISubscription } from './wasi-util';
 
-onmessage = async (msg: MessageEvent) => {
+self.addEventListener('message', async (msg: MessageEvent) => {
   console.log('init');
   serveIfInitMsg(msg);
   const fds: Fd[] = [
@@ -46,9 +46,7 @@ onmessage = async (msg: MessageEvent) => {
   wasiHack(wasiInstance, certfd, 5);
   wasiHackSocket(wasiInstance, listenfd, 5);
 
-  const wasm = await fetch(getImagename(), { credentials: 'same-origin' }).then(
-    (res) => res.arrayBuffer(),
-  );
+  const wasm = await fetchChunks2();
 
   WebAssembly.instantiate(wasm, {
     wasi_snapshot_preview1: wasiInstance.wasiImport,
@@ -63,7 +61,7 @@ onmessage = async (msg: MessageEvent) => {
       },
     );
   });
-};
+});
 
 // definition from wasi-libc https://github.com/WebAssembly/wasi-libc/blob/wasi-sdk-19/expected/wasm32-wasi/predefined-macros.txt
 const ERRNO_INVAL = 28;

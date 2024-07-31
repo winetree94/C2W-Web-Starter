@@ -5,9 +5,15 @@
     "packages/*"
   ],
   "scripts": {
-    "app:dev": "yarn workspace @c2w/browser_runtime dev",
-    "app:build": "yarn workspace @c2w/browser_runtime build",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"Browser Runtime,Playground\" -c \"bgBlue.bold,bgMagenta.bold\" \"yarn workspace @c2w/browser_runtime watch\" \"yarn workspace @c2w/playground dev\"",
+    "browser_runtime:dev": "yarn workspace @c2w/browser_runtime dev",
+    "browser_runtime:build": "yarn workspace @c2w/browser_runtime build",
+    "playground:dev": "yarn workspace @c2w/playground dev",
+    "playground:build": "yarn workspace @c2w/playground build",
     "binary:install": "yarn workspace @c2w/builder binary:install",
-    "wasm:build": "yarn workspace @c2w/builder wasm:build && yarn workspace @c2w/container wasm:copy"
+    "wasm:build": "yarn workspace @c2w/builder wasm:build && yarn workspace @c2w/builder wasm:copy"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

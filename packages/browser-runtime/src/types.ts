@@ -1,6 +1,7 @@
 export interface InitMessage {
   type: 'init';
   buf?: SharedArrayBuffer;
+  wasmChunks: string[];
   imagename: string;
   networkMode: NetworkMode;
   chunkCount: number;

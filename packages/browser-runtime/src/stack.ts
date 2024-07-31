@@ -3,11 +3,10 @@ import { InitMessage, NetworkMode } from './types';
 
 export function newStack(
   worker: Worker,
-  workerImageName: string,
-  chunkCount: number,
+  chunks: string[],
   networkMode: NetworkMode,
   stackWorker: Worker,
-  stackImageName: string,
+  stackImageChunks: string[],
 ) {
   const p2vbuf = {
     buf: new Uint8Array(0), // proxy => vm
@@ -33,16 +32,15 @@ export function newStack(
     type: 'init',
     buf: proxyShared,
     networkMode,
-    imagename: stackImageName,
+    wasmChunks: stackImageChunks,
   });
 
   const vmShared = new SharedArrayBuffer(12 + 4096);
   worker.postMessage(<InitMessage>{
     type: 'init',
     buf: vmShared,
-    imagename: workerImageName,
+    wasmChunks: chunks,
     networkMode,
-    chunkCount,
   });
 
   return connect('vm', vmShared, vmConn, certbuf);

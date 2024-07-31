@@ -1,0 +1,6 @@
+@import 'xterm/css/xterm.css';
+
+.xterm-screen {
+  /* margin-top: 0 !important; */
+  /* overflow-y: auto; */
+}

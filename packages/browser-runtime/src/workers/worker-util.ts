@@ -12,9 +12,8 @@ export let streamStatus: Int32Array;
 export let streamLen: Int32Array;
 export let streamData: Uint8Array;
 
-let imagename: string;
-let chunkCount: number;
 let networkMode: NetworkMode;
+let wasmChunks: string[];
 
 export function serveIfInitMsg(msg: MessageEvent) {
   const req_ = msg.data;
@@ -23,9 +22,8 @@ export function serveIfInitMsg(msg: MessageEvent) {
       let shared;
       if (req_.buf) shared = req_.buf;
       registerSocketBuffer(shared);
-      if (req_.imagename) imagename = req_.imagename;
-      if (req_.chunkCount) chunkCount = req_.chunkCount;
       if (req_.networkMode) networkMode = req_.networkMode;
+      if (req_.wasmChunks) wasmChunks = req_.wasmChunks;
       return true;
     }
   }
@@ -33,15 +31,14 @@ export function serveIfInitMsg(msg: MessageEvent) {
   return false;
 }
 
-// fetchChunks fetches specified number of consecutive chunks and
-// passes the concatinated array buffer to the callback.
-export function fetchChunks() {
-  const files = Array.from({ length: chunkCount }).map(
-    (_, i) => `/wasms/${imagename}.wasm.part${i}`,
-  );
-
+export function fetchChunks2() {
+  console.log('fetch chunks', wasmChunks);
   return Promise.all(
-    files.map((file) => fetch(file).then((res) => res.arrayBuffer())),
+    wasmChunks.map((file) =>
+      fetch(file, {
+        credentials: 'same-origin',
+      }).then((res) => res.arrayBuffer()),
+    ),
   ).then((resps) => {
     const results = resps.map((r) => r);
     const blob = new Blob(results);
@@ -54,10 +51,6 @@ export function registerSocketBuffer(shared: SharedArrayBuffer) {
   streamStatus = new Int32Array(shared, 4, 1);
   streamLen = new Int32Array(shared, 8, 1);
   streamData = new Uint8Array(shared, 12);
-}
-
-export function getImagename() {
-  return imagename;
 }
 
 export function getNetworkMode() {

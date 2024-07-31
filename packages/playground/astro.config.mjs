@@ -1,11 +1,19 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import worker from "@astropub/worker"
 
 // https://astro.build/config
 export default defineConfig({
+	server: {
+		headers: {
+			'Cross-Origin-Opener-Policy': 'same-origin',
+			'Cross-Origin-Embedder-Policy': 'require-corp'
+		},
+	},
 	integrations: [
+		worker(),
 		starlight({
-			title: 'My Docs',
+			title: 'C2W Playground',
 			social: {
 				github: 'https://github.com/withastro/starlight',
 			},
@@ -22,6 +30,10 @@ export default defineConfig({
 					autogenerate: { directory: 'reference' },
 				},
 			],
+			customCss: [
+        // Relative path to your custom CSS file
+        './src/styles/custom.css',
+      ],
 		}),
 	],
 });

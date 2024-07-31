@@ -1,8 +1,7 @@
 /* eslint-disable no-case-declarations */
 export function delegate(
   worker: Worker,
-  workerImageName: string,
-  chunkCount: number,
+  wasmChunks: string[],
   networkMode: string,
 ) {
   const shared = new SharedArrayBuffer(8 + 4096);
@@ -14,9 +13,8 @@ export function delegate(
   worker.postMessage({
     type: 'init',
     buf: shared,
-    imagename: workerImageName,
+    wasmChunks: wasmChunks,
     networkMode: networkMode,
-    chunkCount,
   });
 
   const opts = 'binary';

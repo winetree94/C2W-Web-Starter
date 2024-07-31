@@ -1,0 +1,58 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+---
+
+<StarlightPage
+  hasSidebar={false}
+  frontmatter={{
+    title: "My custom page",
+    tableOfContents: false,
+  }}
+>
+  <div>
+    <div id="terminal"></div>
+    <a href="/guides/example/">docs</a>
+  </div>
+  <script>
+    import { c2wTerminal } from "@c2w/browser_runtime";
+
+    const image = {
+      wasmName: "alpine",
+      chunkCount: 5,
+    };
+
+    c2wTerminal({
+      parentElement: document.getElementById("terminal") as HTMLDivElement,
+      networkMode: "browser",
+      imageWorker: new Worker(
+        new URL("@c2w/browser_runtime/workers/worker.js", import.meta.url),
+        {
+          type: "module",
+        }
+      ),
+      imageWasmPaths: Array.from({ length: image.chunkCount }).map(
+        (_, i) => `/wasms/${image.wasmName}.wasm.part${i}`
+      ),
+      networkWorker: new Worker(
+        new URL(
+          "@c2w/browser_runtime/workers/stack-worker.js",
+          import.meta.url
+        ),
+        {
+          type: "module",
+        }
+      ),
+      networkWasmPaths: ["/wasms/c2w-net-proxy.wasm"],
+    });
+  </script>
+  <style is:global>
+    /* Hide title */
+    .content-panel:nth-of-type(1) {
+      display: none;
+    }
+
+    .content-panel {
+      padding: 0;
+    }
+  </style>
+</StarlightPage>

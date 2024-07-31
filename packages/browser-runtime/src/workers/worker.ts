@@ -2,7 +2,7 @@
 import { Fd, WASI, wasi } from '@bjorn3/browser_wasi_shim';
 import {
   errStatus,
-  fetchChunks,
+  fetchChunks2,
   getCertDir,
   getNetworkMode,
   recvCert,
@@ -14,7 +14,7 @@ import { TtyClient } from 'xterm-pty';
 import { WASIEvent, WASIEventType, WASISubscription } from './wasi-util';
 import { NETWORK_MODE } from '../types';
 
-onmessage = async (msg: MessageEvent) => {
+self.addEventListener('message', async (msg: MessageEvent) => {
   if (serveIfInitMsg(msg)) {
     return;
   }
@@ -22,14 +22,14 @@ onmessage = async (msg: MessageEvent) => {
   let args: string[] = [];
   let env: string[] = [];
   let fds: Fd[] = [];
-  const netParam = getNetworkMode();
+  const networkMode = getNetworkMode();
   let listenfd = 3;
 
-  const wasm = await fetchChunks();
-  if (netParam) {
-    if (netParam == NETWORK_MODE.DELEGATE) {
+  const wasm = await fetchChunks2();
+  if (networkMode) {
+    if (networkMode == NETWORK_MODE.DELEGATE) {
       args = ['arg0', '--net=socket', '--mac', genmac()];
-    } else if (netParam == NETWORK_MODE.BROWSER) {
+    } else if (networkMode == NETWORK_MODE.BROWSER) {
       recvCert().then((cert) => {
         const certDir = getCertDir(cert);
         fds = [
@@ -61,12 +61,7 @@ onmessage = async (msg: MessageEvent) => {
     }
   }
   startWasi(wasm, ttyClient, args, env, fds, listenfd, 5);
-  // fetch(getImagename(), { credentials: 'same-origin' }).then((resp) => {
-  //     resp['arrayBuffer']().then((wasm) => {
-
-  //     })
-  // });
-};
+});
 
 function startWasi(
   wasm: BufferSource,
