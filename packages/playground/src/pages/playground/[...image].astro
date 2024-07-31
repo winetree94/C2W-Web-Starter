@@ -1,0 +1,45 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import chunks from "../../components/chunks.json";
+
+export async function getStaticPaths() {
+  return Object.values(chunks).map((image) => ({
+    params: {
+      image: image.name,
+    },
+    props: {
+      ...image,
+    },
+  }));
+}
+
+const props = Astro.props;
+---
+
+<StarlightPage
+  hasSidebar={false}
+  frontmatter={{
+    title: props.name,
+    tableOfContents: false,
+  }}
+>
+  <div id="terminal" class="terminal h-[408px]" data-image-name={props.name}></div>
+
+  <h1>Source Container Image
+  </h1>
+  <p class="border border-gray-200 p-4 rounded-lg">
+    <Fragment set:html={props.image.replaceAll("\n", "<br>").trim()} />
+  </p>
+
+  <script>
+    const root = document.getElementById("terminal") as HTMLDivElement;
+    const imageName = root.dataset.imageName as string;
+    import { createTerminal } from "../../components/run-demon";
+    createTerminal(root, imageName);
+  </script>
+  <style is:global>
+    table {
+      display: table !important;
+    }
+  </style>
+</StarlightPage>

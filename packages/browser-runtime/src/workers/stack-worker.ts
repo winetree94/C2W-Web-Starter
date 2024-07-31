@@ -3,7 +3,7 @@ import { Fd, WASI, wasi } from '@bjorn3/browser_wasi_shim';
 import {
   appendData,
   errStatus,
-  fetchChunks2,
+  fetchChunks,
   sendCert,
   serveIfInitMsg,
   sockWaitForReadable,
@@ -46,7 +46,7 @@ self.addEventListener('message', async (msg: MessageEvent) => {
   wasiHack(wasiInstance, certfd, 5);
   wasiHackSocket(wasiInstance, listenfd, 5);
 
-  const wasm = await fetchChunks2();
+  const wasm = await fetchChunks();
 
   WebAssembly.instantiate(wasm, {
     wasi_snapshot_preview1: wasiInstance.wasiImport,

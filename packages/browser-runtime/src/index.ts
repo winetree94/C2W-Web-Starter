@@ -8,6 +8,8 @@ import { newStack } from './stack';
 import { NETWORK_MODE } from './types';
 import type { InitMessage } from './types';
 
+export { NETWORK_MODE, NetworkMode } from './types';
+
 export interface C2WImage {
   path: string;
   wasmName: string;

@@ -2,7 +2,7 @@ import { copyFileSync } from "fs";
 import { copyDirectoryContents, resetDirectory } from "./utils";
 
 const runner = async () => {
-  await resetDirectory("../coder/public/wasms");
+  await resetDirectory("../playground/public/wasms");
   await copyDirectoryContents(
     "dist",
     "../playground/public/wasms"

@@ -1,6 +1,6 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import worker from "@astropub/worker"
+import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
@@ -11,7 +11,6 @@ export default defineConfig({
 		},
 	},
 	integrations: [
-		worker(),
 		starlight({
 			title: 'C2W Playground',
 			social: {
@@ -35,5 +34,8 @@ export default defineConfig({
         './src/styles/custom.css',
       ],
 		}),
+		tailwind({
+      applyBaseStyles: false,
+    }),
 	],
 });

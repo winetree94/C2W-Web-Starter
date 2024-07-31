@@ -2,7 +2,7 @@
 import { Fd, WASI, wasi } from '@bjorn3/browser_wasi_shim';
 import {
   errStatus,
-  fetchChunks2,
+  fetchChunks,
   getCertDir,
   getNetworkMode,
   recvCert,
@@ -25,7 +25,7 @@ self.addEventListener('message', async (msg: MessageEvent) => {
   const networkMode = getNetworkMode();
   let listenfd = 3;
 
-  const wasm = await fetchChunks2();
+  const wasm = await fetchChunks();
   if (networkMode) {
     if (networkMode == NETWORK_MODE.DELEGATE) {
       args = ['arg0', '--net=socket', '--mac', genmac()];

@@ -1,6 +1,8 @@
-@import 'xterm/css/xterm.css';
+@import "xterm/css/xterm.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.xterm-screen {
-  /* margin-top: 0 !important; */
-  /* overflow-y: auto; */
+.xterm * {
+  margin-top: 0 !important;
 }

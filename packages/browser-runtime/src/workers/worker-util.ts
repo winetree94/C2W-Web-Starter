@@ -31,8 +31,7 @@ export function serveIfInitMsg(msg: MessageEvent) {
   return false;
 }
 
-export function fetchChunks2() {
-  console.log('fetch chunks', wasmChunks);
+export function fetchChunks() {
   return Promise.all(
     wasmChunks.map((file) =>
       fetch(file, {

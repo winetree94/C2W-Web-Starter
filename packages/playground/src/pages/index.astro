@@ -1,58 +1,72 @@
 ---
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import chunks from "../components/chunks.json";
 ---
 
 <StarlightPage
   hasSidebar={false}
   frontmatter={{
-    title: "My custom page",
+    title: "Containers on browser Playground",
     tableOfContents: false,
   }}
 >
-  <div>
-    <div id="terminal"></div>
+<div id="terminal" class="terminal h-[408px]" data-image-name='alpine'></div>
+  <h1>x86_64 containers demo</h1>
+  <table class="w-full table-fixed table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Image</th>
+        <th>Size</th>
+        <th>Demo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        Object.values(chunks).map((image) => (
+          <tr>
+            <td>{image.name}</td>
+            <td>
+              <Fragment set:html={image.image.replaceAll("\n", "<br>")} />
+            </td>
+            <td>{Math.ceil(image.size / 1024 / 1024)}MB</td>
+            <td>
+              <a href={`/playground/${image.name}/`}>No network</a>
+              <a href={`/playground/${image.name}/?net=delegate`}>delegate</a>
+              <a href={`/playground/${image.name}/?net=browser`}>browser</a>
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <div class="flex">
     <a href="/guides/example/">docs</a>
   </div>
   <script>
-    import { c2wTerminal } from "@c2w/browser_runtime";
-
-    const image = {
-      wasmName: "alpine",
-      chunkCount: 5,
-    };
-
-    c2wTerminal({
-      parentElement: document.getElementById("terminal") as HTMLDivElement,
-      networkMode: "browser",
-      imageWorker: new Worker(
-        new URL("@c2w/browser_runtime/workers/worker.js", import.meta.url),
-        {
-          type: "module",
-        }
-      ),
-      imageWasmPaths: Array.from({ length: image.chunkCount }).map(
-        (_, i) => `/wasms/${image.wasmName}.wasm.part${i}`
-      ),
-      networkWorker: new Worker(
-        new URL(
-          "@c2w/browser_runtime/workers/stack-worker.js",
-          import.meta.url
-        ),
-        {
-          type: "module",
-        }
-      ),
-      networkWasmPaths: ["/wasms/c2w-net-proxy.wasm"],
-    });
+    const root = document.getElementById("terminal") as HTMLDivElement;
+    const imageName = root.dataset.imageName as string;
+    import { createTerminal } from "../components/run-demon";
+    createTerminal(root, imageName);
   </script>
   <style is:global>
     /* Hide title */
+
     .content-panel:nth-of-type(1) {
-      display: none;
+      /* display: none; */
     }
 
     .content-panel {
-      padding: 0;
+      /* padding: 0; */
+    }
+
+    .terminal {
+      /* margin-top: 80px; */
+    }
+
+    table {
+      display: table !important;
     }
   </style>
 </StarlightPage>
