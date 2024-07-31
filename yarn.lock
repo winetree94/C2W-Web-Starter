@@ -529,6 +529,7 @@ __metadata:
     "@bjorn3/browser_wasi_shim": "npm:^0.3.0"
     "@c2w/browser_runtime": "workspace:^"
     "@c2w/builder": "workspace:^"
+    "@picocss/pico": "npm:^2.0.6"
     astro: "npm:^4.10.2"
     sharp: "npm:^0.32.5"
     tailwindcss: "npm:^3.4.7"
@@ -1419,6 +1420,13 @@ __metadata:
   version: 1.1.0
   resolution: "@pagefind/windows-x64@npm:1.1.0"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@picocss/pico@npm:^2.0.6":
+  version: 2.0.6
+  resolution: "@picocss/pico@npm:2.0.6"
+  checksum: 10c0/ed93254e3b0bf6d80c881f8e6d3b4070ff1cefe8f0e084f1d275a486225604a3fd164fbc0b757f50f29623782c80e1d98afdabcd6b6f013c23568b023af39b3e
   languageName: node
   linkType: hard
 

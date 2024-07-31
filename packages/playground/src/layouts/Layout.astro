@@ -1,0 +1,27 @@
+---
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Astro description" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+    <meta name="generator" content={Astro.generator} />
+    <title>C2W Playground</title>
+  </head>
+  <body>
+		<main class="m-8">
+			<header class="mb-8">
+				<h1>Container2Wasm Playground</h1>
+			</header>
+    	<slot />
+		</main>
+  </body>
+</html>
