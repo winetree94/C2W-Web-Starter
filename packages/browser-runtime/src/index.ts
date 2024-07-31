@@ -1,10 +1,7 @@
-// import 'xterm/css/xterm.css';
-// import './style.css';
 import { Terminal } from 'xterm';
 import { Flags, openpty, Termios, TtyServer } from 'xterm-pty';
 import { delegate } from './ws-delegate';
 import { newStack } from './stack';
-// import chunks from './chunks.json';
 import { NETWORK_MODE } from './types';
 import type { InitMessage } from './types';
 
