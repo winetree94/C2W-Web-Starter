@@ -1,0 +1,27 @@
+{
+  "name": "C2W Proxy",
+  "description": "Detect the emails on a website",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "permissions": [
+    "webRequest",
+    "webNavigation",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "declarativeNetRequestFeedback"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*/*"
+      ],
+      "js": [
+        "main.js"
+      ]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

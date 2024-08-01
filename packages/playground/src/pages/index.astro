@@ -30,9 +30,7 @@ import Layout from "../layouts/Layout.astro";
               </td>
               <td>{Math.ceil(image.size / 1024 / 1024)}MB</td>
               <td>
-                <a href={`/playground/${image.name}/`}>No network</a>
-                <a href={`/playground/${image.name}/?net=delegate`}>delegate</a>
-                <a href={`/playground/${image.name}/?net=browser`}>browser</a>
+                <a href={`/playground/${image.name}/`}>Run</a>
               </td>
             </tr>
           ))
@@ -40,6 +38,4 @@ import Layout from "../layouts/Layout.astro";
       </tbody>
     </table>
   </section>
-  <p>NOTE: They are compiled as WASI images and run on browser via polyfill.</p>
-  <p>More info including docs and source code is available from <a href="https://github.com/ktock/container2wasm">container2wasm</a> repo. This page is served from <a href="https://github.com/ktock/container2wasm-demo">container2wasm-demo repo</a> as GitHub Pages.</p>
 </Layout>

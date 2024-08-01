@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "dev": "concurrently -k -p \"[{name}]\" -n \"Browser Runtime,Playground\" -c \"bgBlue.bold,bgMagenta.bold\" \"yarn workspace @c2w/browser_runtime watch\" \"yarn workspace @c2w/playground dev\"",
-    "build": "yarn workspace @c2w/browser_runtime build && yarn workspace @c2w/playground build",
+    "build": "yarn workspace @c2w/browser_runtime build && yarn workspace @c2w/proxy build && yarn workspace @c2w/playground build",
     "browser_runtime:dev": "yarn workspace @c2w/browser_runtime watch",
     "browser_runtime:build": "yarn workspace @c2w/browser_runtime build",
     "builder:dev": "yarn workspace @c2w/builder watch",
