@@ -1,2 +1,1 @@
-console.log('extension works');
-
+console.log('Hello from proxy!');

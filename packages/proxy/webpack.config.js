@@ -9,7 +9,7 @@ const entryPoints = {
   main: [
     path.resolve(__dirname, 'src', 'main.ts'),
   ],
-  background: path.resolve(__dirname, 'src', 'background.ts')
+  background: path.resolve(__dirname, 'src', 'background.ts'),
 };
 
 module.exports = {

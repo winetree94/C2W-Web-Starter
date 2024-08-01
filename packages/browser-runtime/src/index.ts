@@ -4,6 +4,11 @@ import { delegate } from './ws-delegate';
 import { newStack } from './stack';
 import { NETWORK_MODE } from './types';
 import type { InitMessage } from './types';
+import { fetcher } from './fetcher';
+
+fetcher('https://jsonplaceholder.typicode.com/todos/1')
+  .then((res) => res.json())
+  .then(console.log);
 
 export { NETWORK_MODE, NetworkMode } from './types';
 

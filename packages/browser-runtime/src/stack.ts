@@ -1,4 +1,5 @@
 /* eslint-disable no-var */
+import { fetcher } from './fetcher';
 import { InitMessage, NetworkMode } from './types';
 
 export function newStack(
@@ -193,9 +194,10 @@ export function connect(
             ) {
               connObj.request.body = connObj.reqBodybuf;
             }
-            fetch(connObj.address, connObj.request)
+
+            fetcher(connObj.address, connObj.request)
               .then((resp) => {
-                (connObj.response = new TextEncoder().encode(
+                connObj.response = new TextEncoder().encode(
                   JSON.stringify({
                     bodyUsed: resp.bodyUsed,
                     headers: resp.headers,
@@ -205,8 +207,8 @@ export function connect(
                     type: resp.type,
                     url: resp.url,
                   }),
-                )),
-                  (connObj.done = false);
+                );
+                connObj.done = false;
                 connObj.respBodybuf = new Uint8Array(0);
                 if (resp.ok) {
                   resp
