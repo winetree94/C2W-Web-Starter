@@ -27,8 +27,7 @@ import "../styles/global.css";
       <slot />
       <section>
         <h2>Network</h2>
-        <p>The network functionality relies on the browser's fetch API. Therefore, requests may fail depending on the response headers from the server being accessed. Installing <a href="/c2w_proxy.zip">this Chrome Extension</a> will automatically modify the contents of the response headers, allowing most requests to succeed.</p>
-        <p>This extension is intended for development purposes and affects all websites. It is recommended to uninstall it after testing.</p>
+        <p>The network requests typically use the browser's fetch API. However, due to browser security protocols, the requests can fail due to CORS and Mixed Content errors. By using <a href="/c2w_proxy.zip">this Chrome Extension</a>, all requests from the container will be executed through the extension, resolving the issues. You can extract the files and load the extension via 'Load unpacked' at chrome://extensions/.</p>
       </section>
     </main>
   </body>
