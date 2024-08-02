@@ -2,21 +2,36 @@
   "name": "@c2w/proxy",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode production",
     "dev": "webpack --mode production --watch"
   },
   "devDependencies": {
+    "@eslint/js": "^9.8.0",
     "@types/chrome": "^0.0.269",
+    "@types/eslint": "^9",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^7.1.2",
     "dotenv": "^16.0.1",
     "dotenv-webpack": "^8.0.1",
+    "eslint": "9.x",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.9.0",
+    "html-webpack-plugin": "^5.6.0",
+    "prettier": "^3.3.3",
+    "style-loader": "^4.0.0",
     "ts-loader": "^9.3.1",
     "typescript": "^5.5.4",
+    "typescript-eslint": "^8.0.0",
     "webpack": "^5.73.0",
     "webpack-cli": "^4.10.0",
     "zip-webpack-plugin": "^4.0.1"
+  },
+  "dependencies": {
+    "@picocss/pico": "^2.0.6"
   }
 }

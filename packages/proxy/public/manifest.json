@@ -4,7 +4,11 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApLTTts8Eu+UGXvZ1b0qxTyMNwdMFQrjvmZVgQqy/lb2ESqs4zHVcMsu1vfqba9XSWZDPuzzGE0zavlqWS3q/Tq+DjRZeK4iqDX36f8jcs9HOEsUCuRB127W3BkWFrxxhDTkn/irkmUaWgD256sKkwXGO1QYyYSY79wAyTJmbuvzdUl+kAl6vPZ2/n75uyGklEGnx2zapxDcZ1joTfoeSmeo+p6IZZYWGPC3RG8Ury45aLgqs/NNuT+rehCdPxRJDcx1xDg8Kfj7FLKfr+pZgOWBXC9WEwBMRi2m14ZNtmjZhOQK/wtuDwZUt0ywYPxH67UxZULukkdPwrVLgCdJIiwIDAQAB",
   "version": "1.0.0",
   "manifest_version": 3,
+  "action": {
+    "default_popup": "popup.html"
+  },
   "permissions": [
+    "storage",
     "activeTab",
     "webRequest",
     "webNavigation",
@@ -17,25 +21,29 @@
   ],
   "externally_connectable": {
     "matches": [
-      "*://*/*"
+      "<all_urls>"
     ]
   },
   "web_accessible_resources": [
     {
-      "matches": ["*://*/*"],
+      "matches": [
+        "<all_urls>"
+      ],
       "resources": [
-        "icon.svg"
+        "icon.svg",
+        "inject.js"
       ]
     }
   ],
   "content_scripts": [
     {
       "matches": [
-        "*://*/*"
+        "<all_urls>"
       ],
       "js": [
         "main.js"
-      ]
+      ],
+      "run_at": "document_start"
     }
   ],
   "background": {
