@@ -12,6 +12,8 @@
     "@eslint/js": "^9.8.0",
     "@types/chrome": "^0.0.269",
     "@types/eslint": "^9",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^7.1.2",
@@ -32,6 +34,8 @@
     "zip-webpack-plugin": "^4.0.1"
   },
   "dependencies": {
-    "@picocss/pico": "^2.0.6"
+    "@picocss/pico": "^2.0.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

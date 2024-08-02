@@ -15,17 +15,18 @@ const entryPoints = {
   main: path.resolve(__dirname, 'src', 'main.ts'),
   background: path.resolve(__dirname, 'src', 'background.ts'),
   inject: path.resolve(__dirname, 'src', 'inject.ts'),
-  popup: path.resolve(__dirname, 'src', 'popup.ts'),
+  popup: path.resolve(__dirname, 'src', 'settings', 'index.tsx'),
 };
 
 const configs = {
   entry: entryPoints,
+  devtool: 'inline-source-map',
   output: {
     path: path.join(__dirname, outputPath),
     filename: '[name].js',
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.tsx', '.js', 'jsx'],
   },
   module: {
     rules: [
