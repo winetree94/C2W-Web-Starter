@@ -15,7 +15,8 @@ const entryPoints = {
   main: path.resolve(__dirname, 'src', 'main.ts'),
   background: path.resolve(__dirname, 'src', 'background.ts'),
   inject: path.resolve(__dirname, 'src', 'inject.ts'),
-  popup: path.resolve(__dirname, 'src', 'settings', 'index.tsx'),
+  popup: path.resolve(__dirname, 'src', 'popup', 'index.tsx'),
+  options: path.resolve(__dirname, 'src', 'options', 'index.tsx'),
 };
 
 const configs = {
@@ -44,8 +45,13 @@ const configs = {
   plugins: [
     new HtmlWebpackPlugin({
       filename: 'popup.html',
-      template: 'src/popup.html',
+      template: 'src/popup/index.html',
       chunks: ['popup'],
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'options.html',
+      template: 'src/options/index.html',
+      chunks: ['options'],
     }),
     new CleanWebpackPlugin(),
     new CopyPlugin({

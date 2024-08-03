@@ -1,5 +1,11 @@
+import { DEFAULT_ENABLED_SITES, DEFAULT_EXTENSION_ENABLED } from './constants';
+
 interface GetEnableRequestMessage {
   type: 'get-enabled';
+}
+
+interface GetEnabledSitesMessage {
+  type: 'get-enabled-sites';
 }
 
 interface FetchRequestMessage {
@@ -8,66 +14,87 @@ interface FetchRequestMessage {
   options: RequestInit;
 }
 
-type RequestMessage = GetEnableRequestMessage | FetchRequestMessage;
+type RequestMessage =
+  | GetEnableRequestMessage
+  | GetEnabledSitesMessage
+  | FetchRequestMessage;
 
 let enabled: boolean = false;
+let sites: string[] = [];
 
-chrome.storage.local.get('enabled', (data) => {
-  enabled = !!data.enabled;
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.enabled) {
-      enabled = !!changes.enabled.newValue;
-    }
-  });
-  chrome.runtime.onMessageExternal.addListener(
-    async (request: RequestMessage, sender, sendResponse) => {
-      if (request.type === 'get-enabled') {
-        sendResponse(enabled);
-        return;
+chrome.storage.local.get(
+  {
+    enabled: DEFAULT_EXTENSION_ENABLED,
+    sites: DEFAULT_ENABLED_SITES,
+  },
+  (data) => {
+    enabled = !!data.enabled;
+    sites = data.sites || [];
+
+    chrome.storage.onChanged.addListener((changes) => {
+      if (changes.enabled) {
+        enabled = !!changes.enabled.newValue;
       }
-
-      if (request.type !== 'fetch') {
-        sendResponse({
-          type: 'error',
-          error: 'Invalid request type',
-        });
-        return;
+      if (changes.sites) {
+        sites = changes.sites.newValue || [];
       }
+    });
 
-      try {
-        const res = await fetch(request.url, request.options);
-        const headers: {
-          [key: string]: string;
-        } = {};
-        res.headers.forEach((value, key) => {
-          headers[key] = value;
-        });
+    chrome.runtime.onMessageExternal.addListener(
+      async (request: RequestMessage, sender, sendResponse) => {
+        if (request.type === 'get-enabled') {
+          sendResponse(enabled);
+          return;
+        }
 
-        const buffer = await res.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
-        const blob = new TextDecoder().decode(bytes);
+        if (request.type === 'get-enabled-sites') {
+          sendResponse(sites);
+          return;
+        }
 
-        console.log('Request URL:', request.url);
-        console.log('Response Status:', res.status, res.statusText);
-        console.log('Response Headers:', headers);
+        if (request.type !== 'fetch') {
+          sendResponse({
+            type: 'error',
+            error: 'Invalid request type',
+          });
+          return;
+        }
 
-        sendResponse({
-          type: 'response',
-          status: res.status,
-          statusText: res.statusText,
-          headers: headers,
-          responseBuffer: blob,
-        });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        console.error('Fetch error:', error);
-        sendResponse({
-          type: 'error',
-          error: error.message || error,
-        });
-      }
+        try {
+          console.log('Request URL:', request.url);
+          console.log('Request options:', request.options);
 
-      return true;
-    },
-  );
-});
+          const res = await fetch(request.url, request.options);
+          const headers: {
+            [key: string]: string;
+          } = {};
+          res.headers.forEach((value, key) => {
+            headers[key] = value;
+          });
+
+          const buffer = await res.arrayBuffer();
+          const bytes = new Uint8Array(buffer);
+          const blob = new TextDecoder().decode(bytes);
+
+
+          sendResponse({
+            type: 'response',
+            status: res.status,
+            statusText: res.statusText,
+            headers: headers,
+            responseBuffer: blob,
+          });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+          console.error('Fetch error:', error);
+          sendResponse({
+            type: 'error',
+            error: error.message || error,
+          });
+        }
+
+        return true;
+      },
+    );
+  },
+);

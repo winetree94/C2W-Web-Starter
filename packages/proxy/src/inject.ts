@@ -47,12 +47,10 @@ const checkExtension = (id: string, src: string): Promise<boolean> => {
     e.onload = () => {
       resolve(true);
       installed = true;
-      console.log('extension installed');
     };
     e.onerror = () => {
       resolve(false);
       installed = false;
-      console.log('extension not installed');
     };
   });
 };
@@ -71,9 +69,24 @@ const isEnabled = (): Promise<boolean> => {
   });
 };
 
+const getEnabledSites = (): Promise<string[]> => {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage(
+      targetExtensionId,
+      {
+        type: 'get-enabled-sites',
+      },
+      (res: string[]) => {
+        return resolve(res);
+      },
+    );
+  });
+};
+
 const originFetch = window.fetch;
 window.fetch = async (url: RequestInfo | URL, options?: RequestInit) => {
   const installed = await checkExtension(targetExtensionId, 'icon.svg');
+  console.log('installed: ', installed);
   if (!installed) {
     return originFetch(url, options);
   }
@@ -82,6 +95,14 @@ window.fetch = async (url: RequestInfo | URL, options?: RequestInit) => {
   if (!enabled) {
     return originFetch(url, options);
   }
+  const sites = await getEnabledSites();
+  console.log('sites: ', sites);
+  if (!sites.some((site) => location.href.includes(site))) {
+    return originFetch(url, options);
+  }
+
+  console.log('fetch proxy url: ', url);
+  console.log('fetch proxy options: ', options);
 
   return new Promise<Response>((resolve, reject) => {
     chrome.runtime.sendMessage(

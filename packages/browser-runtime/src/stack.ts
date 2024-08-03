@@ -193,7 +193,6 @@ export function connect(
             ) {
               connObj.request.body = connObj.reqBodybuf;
             }
-
             fetch(connObj.address, connObj.request)
               .then((resp) => {
                 connObj.response = new TextEncoder().encode(
