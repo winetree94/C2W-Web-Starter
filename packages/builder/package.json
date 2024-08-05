@@ -1,7 +1,7 @@
 {
   "name": "@c2w/builder",
   "bin": {
-    "c2w-builder": "./bin/cli.js"
+    "c2w-builder": "./dist/cli.js"
   },
   "scripts": {
     "watch": "tsup --watch",

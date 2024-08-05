@@ -415,7 +415,7 @@ __metadata:
     tsup: "npm:^8.2.3"
     typescript: "npm:^5.5.4"
   bin:
-    c2w-builder: ./bin/cli.js
+    c2w-builder: ./dist/cli.js
   languageName: unknown
   linkType: soft
 
